@@ -78,6 +78,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+    - name: Delete Deployment Environment
+      uses: strumwolf/delete-deployment-environment@v4.0.0
+      with:
+        # GitHub access token
+        token: ${{ secrets.GITHUB_TOKEN }}
+        # Environment to be deleted
+        environment: github-pages
+        # Only remove deployments, keep the environment. Defaults to false
+        onlyRemoveDeployments: true
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
