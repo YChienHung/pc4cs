@@ -1,7 +1,7 @@
 {
   "name": "HugoBlox Codespace",
   "image": "docker.io/hugomods/hugo:debian-exts",
-  "updateContentCommand": "npm install -g pnpm@10.14.0 && pnpm install --frozen-lockfile --prefer-offline",
+  "updateContentCommand": "npm install -g pnpm@10.14.0 hugoblox && pnpm install --frozen-lockfile --prefer-offline",
   "postCreateCommand": "pnpm --version && hugo version",
   "customizations": {
     "vscode": {
