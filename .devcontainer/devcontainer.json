@@ -1,9 +1,6 @@
 {
   "name": "HugoBlox Codespace",
   "image": "docker.io/hugomods/hugo:debian-exts",
-  "remoteUser": "root",
-  "containerUser": "root",
-  "updateRemoteUserUID": false,
   "updateContentCommand": "pnpm install --frozen-lockfile --prefer-offline",
   "postCreateCommand": "pnpm --version && hugo version",
   "customizations": {
@@ -14,9 +11,9 @@
     }
   },
   "mounts": [
-    "source=pnpm-store,target=/home/vscode/.local/share/pnpm,type=volume"
+    "source=pnpm-store,target=/home/ubuntu/.local/share/pnpm,type=volume"
   ],
-  "remoteUser": "vscode",
+  "remoteUser": "ubuntu",
   "forwardPorts": [
     1313
   ],
