@@ -11,9 +11,11 @@
     }
   },
   "mounts": [
-    "source=pnpm-store,target=/home/ubuntu/.local/share/pnpm,type=volume"
+    "source=pnpm-store,target=/home/hugo/.local/share/pnpm,type=volume"
   ],
-  "remoteUser": "ubuntu",
+  "remoteUser": "hugo",
+  "containerUser": "hugo",
+  "updateRemoteUserUID": false,
   "forwardPorts": [
     1313
   ],
