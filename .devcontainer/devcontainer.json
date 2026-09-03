@@ -2,6 +2,8 @@
   "name": "HugoBlox Codespace",
   "image": "docker.io/hugomods/hugo:debian-exts",
   "remoteUser": "root",
+  "containerUser": "root",
+  "updateRemoteUserUID": false,
   "updateContentCommand": "pnpm install --frozen-lockfile --prefer-offline",
   "postCreateCommand": "pnpm --version && hugo version",
   "customizations": {
