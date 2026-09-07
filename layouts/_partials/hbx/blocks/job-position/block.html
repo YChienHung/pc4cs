@@ -1,0 +1,94 @@
+{{/* 岗位区块：先检查结构和字段类型，再渲染，避免对空值或错误类型取字段。 */}}
+{{ $page := .wcPage }}
+{{ $block := .wcBlock }}
+{{ if not (reflect.IsMap $block) }}{{ $block = dict }}{{ end }}
+{{ $content := index $block "content" }}
+{{ if not (reflect.IsMap $content) }}{{ $content = dict }}{{ end }}
+
+{{/* 文本字段仅接受字符串；缺失、null、纯空白或错误类型均忽略。 */}}
+{{ $title := "" }}
+{{ $intro := "" }}
+{{ $raw := index $content "title" }}
+{{ if eq (printf "%T" $raw) "string" }}
+  {{ $title = strings.TrimSpace $raw }}
+{{ end }}
+{{ $raw = index $content "intro" }}
+{{ if eq (printf "%T" $raw) "string" }}
+  {{ $intro = strings.TrimSpace $raw }}
+{{ end }}
+
+{{/* sections 接受列表或单段字符串；列表项支持映射与直接文本，过滤空内容。 */}}
+{{ $sections := slice }}
+{{ $sectionsRaw := index $content "sections" }}
+{{ if eq (printf "%T" $sectionsRaw) "string" }}
+  {{ $sectionsRaw = slice $sectionsRaw }}
+{{ end }}
+{{ if reflect.IsSlice $sectionsRaw }}
+  {{ range $sectionsRaw }}
+    {{ if eq (printf "%T" .) "string" }}
+      {{/* 直接文本也支持 Markdown，使用与结构化正文相同的渲染方式。 */}}
+      {{ $text := strings.TrimSpace . }}
+      {{ if $text }}
+        {{ $sections = $sections | append (dict "title" "" "text" $text "items" (slice)) }}
+      {{ end }}
+    {{ else if reflect.IsMap . }}
+      {{ $heading := "" }}
+      {{ $text := "" }}
+      {{ $items := slice }}
+      {{ $value := index . "title" }}
+      {{ if eq (printf "%T" $value) "string" }}
+        {{ $heading = strings.TrimSpace $value }}
+      {{ end }}
+      {{ $value = index . "text" }}
+      {{ if eq (printf "%T" $value) "string" }}
+        {{ $text = strings.TrimSpace $value }}
+      {{ end }}
+      {{ $itemsRaw := index . "items" }}
+      {{ if reflect.IsSlice $itemsRaw }}
+        {{ range $itemsRaw }}
+          {{ if eq (printf "%T" .) "string" }}
+            {{ $item := strings.TrimSpace . }}
+            {{ if $item }}{{ $items = $items | append $item }}{{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+      {{ if or $text (gt (len $items) 0) }}
+        {{ $sections = $sections | append (dict "title" $heading "text" $text "items" $items) }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* 整个岗位没有有效内容时，不生成空卡片。 */}}
+{{ if or $title $intro (gt (len $sections) 0) }}
+<div class="w-full max-w-5xl mx-auto px-6">
+  <article class="h-full bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden flex flex-col motion-reduce:transform-none motion-reduce:transition-none">
+    <div class="p-6 sm:p-8 lg:p-10">
+      {{ with $title }}
+        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6 text-center">{{ . }}</h2>
+      {{ end }}
+      {{ with $intro }}
+        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 text-center">{{ . }}</p>
+      {{ end }}
+      {{ range $sections }}
+        <div class="mb-8 last:mb-0 text-left">
+          {{ with .title }}
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ . }}</h3>
+          {{ end }}
+          {{ with .text }}
+            <div class="prose prose-slate dark:prose-invert max-w-none">
+              {{/* 正常由 HugoBlox 传入页面对象；缺少页面上下文时按纯文本显示。 */}}
+              {{ if $page }}{{ $page.RenderString . }}{{ else }}{{ . }}{{ end }}
+            </div>
+          {{ end }}
+          {{ with .items }}
+            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+              {{ range . }}<li>{{ . }}</li>{{ end }}
+            </ul>
+          {{ end }}
+        </div>
+      {{ end }}
+    </div>
+  </article>
+</div>
+{{ end }}

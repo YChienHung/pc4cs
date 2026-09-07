@@ -13,9 +13,9 @@ hugoblox:
   # ────────────────────────────────────────────────────────────────────────────
   identity:
     # Site name - shown in navbar, footer, copyright, and browser title by default
-    name: "Your Name"
+    name: "PC4CS Lab"
     # Legal entity for copyright notices (defaults to name if not set)
-    organization: ""
+    organization: "Perception and Control for Complex Systems Laboratory"
     # Schema.org type for structured data
     type: organization # person | organization | local_business
     # Short tagline displayed on your site
@@ -61,6 +61,10 @@ hugoblox:
   typography:
     # Theme pack: name from data/fonts/
     pack: "academic"
+    families:
+      heading: "Noto Sans SC"  # 标题
+      body: "Noto Sans SC"     # 正文
+      code: "JetBrains Mono"  # 代码
 
   # ────────────────────────────────────────────────────────────────────────────
   # LAYOUT
@@ -104,9 +108,16 @@ hugoblox:
   footer:
     # Footer style variant
     style: minimal # minimal | columns | centered
-    language_switcher: true
-    # Custom footer text (HTML supported)
-    text: ""
+    # show_logo: false
+    # show_title: false
+    # show_tagline: false
+    # # Override footer title (defaults to identity.name)
+    # title: ""
+    # language_switcher: true
+    # # Show social icons from identity.social.links
+    # show_social: false
+    # # Custom footer text (HTML supported)
+    # text: ""
 
   # ────────────────────────────────────────────────────────────────────────────
   # COPYRIGHT
@@ -164,7 +175,7 @@ hugoblox:
       enable: true
     # Academic citations
     citations:
-      style: apa # apa | mla | chicago | ieee
+      style: pub_style # apa | mla | chicago | ieee ｜ pub_style
 
   # ────────────────────────────────────────────────────────────────────────────
   # SEARCH

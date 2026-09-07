@@ -1,0 +1,96 @@
+{{ $item := .item }}
+{{ $year_value := $item.Params.event_start | default $item.Date }}
+{{ $year := (time $year_value).Format "2006" }}
+{{ $has_attachments := partial "functions/has_attachments" $item }}
+{{ $pub := partial "functions/resolve_publication.html" $item }}
+{{ $top_award := "" }}
+{{ with $item.Params.awards }}{{ $top_award = index . 0 }}{{ end }}
+
+{{ $types := $item.Params.publication_types | default (slice) }}
+{{ if not (reflect.IsSlice $types) }}
+  {{ $types = slice $types }}
+{{ end }}
+
+{{ $citation_style := site.Params.hugoblox.content.citations.style | default "apa" }}
+
+<div class="pub-list-item view-citation">
+  <i class="far fa-file-alt pub-icon" aria-hidden="true"></i>
+  {{/* APA Style */}}
+  {{ if eq $citation_style "apa" }}
+
+  <span class="article-metadata li-cite-author">
+    {{ partial "page_metadata_authors" $item }}
+  </span>
+  ({{- $year -}}).
+  <a href="{{ $item.RelPermalink }}" class="underline">{{ $item.Title }}</a>.
+  {{ with $pub.display_short }}{{- . | markdownify -}}.{{ end }}
+  {{ with $top_award }}
+    <span class="ml-1">{{ partial "components/award_badge.html" (dict "award" . "page" $item "variant" "inline") }}</span>
+  {{ end }}
+
+  {{ if $has_attachments }}
+  <div class="flex flex-wrap space-x-3">
+    {{ partial "page_links" (dict "page" $item "is_list" 1) }}
+  </div>
+  {{ end }}
+
+  {{/* MLA Style */}}
+  {{ else if eq $citation_style "mla" }}
+
+  <span class="article-metadata li-cite-author">
+    {{ partial "page_metadata_authors" $item }}.
+  </span>
+  <a href="{{ $item.RelPermalink }}">{{ $item.Title }}</a>.
+  {{ with $pub.display_short }}{{- . | markdownify -}},{{ end }}
+  {{- $year -}}.
+  {{ with $top_award }}
+    <span class="ml-1">{{ partial "components/award_badge.html" (dict "award" . "page" $item "variant" "inline") }}</span>
+  {{ end }}
+
+  {{ if $has_attachments }}
+  <div class="flex flex-wrap space-x-3">
+    {{ partial "page_links" (dict "page" $item "is_list" 1) }}
+  </div>
+  {{ end }}
+  {{ else if eq $citation_style "pub_style" }}
+
+  {{/* 第一行：论文名称。 */}}
+  <div class="text-xl sm:text-2xl font-semibold leading-snug mb-1">
+    <a href="{{ $item.RelPermalink }}" class="text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+      {{ $item.Title }}
+    </a>
+  </div>
+
+  {{/* 第二行：作者。 */}}
+  <div class="article-metadata li-cite-author">
+    {{ partial "page_metadata_authors" $item }}
+  </div>
+
+  {{/* 第三行：期刊／会议、年份及奖励。 */}}
+  <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+    {{ if in $types "article" }}
+      Preprint
+    {{ else }}
+      {{ with $pub.display_short }}
+      <span class="italic">{{ . | markdownify }}</span>
+      {{ end }}
+    {{ end }}
+
+
+    <span class="text-gray-500 dark:text-gray-400">{{ $year }}</span>
+
+    {{ with $top_award }}
+      <span>
+        {{ partial "components/award_badge.html" (dict "award" . "page" $item "variant" "inline") }}
+      </span>
+    {{ end }}
+  </div>
+
+  {{/* 第四行：附件。 */}}
+  {{ if $has_attachments }}
+    <div class="flex flex-wrap space-x-2">
+      {{ partial "page_links" (dict "page" $item "is_list" 1) }}
+    </div>
+  {{ end }}
+  {{ end }}
+</div>

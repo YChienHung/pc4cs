@@ -1,0 +1,24 @@
+{{ $authors := dict }}
+{{ with index hugo.Data .Site.Language.Lang }}
+  {{ with index . "authors" }}
+    {{ $authors = . }}
+  {{ end }}
+{{ end }}
+
+{{ if reflect.IsMap $authors }}
+  {{ range $slug, $profile := $authors }}
+    {{ if reflect.IsMap $profile }}
+
+      {{ $.AddPage (dict
+        "kind" "term"
+        "path" $slug
+        "title" $slug
+        "build" (dict
+          "render" "always"
+          "list" "always"
+        )
+      ) }}
+
+    {{ end }}
+  {{ end }}
+{{ end }}

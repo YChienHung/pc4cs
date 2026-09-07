@@ -6,17 +6,39 @@
 en:
   locale: en-us
   # Uncomment for multi-lingual sites, and move English content into `en` sub-folder.
-  #contentDir: content/en
+  contentDir: content/en
 
 # Uncomment the lines below to configure your website in a second language.
-#zh:
-#  locale: zh-Hans
-#  contentDir: content/zh
-#  title: Chinese website title...
-#  params:
-#    description: Site description in Chinese...
-#  menu:
-#    main:
-#      - name: 传
-#        url: '#about'
-#        weight: 1
+zh:
+ locale: zh-Hans
+ contentDir: content/zh
+ 
+ params:
+   name: 复杂系统感知与控制实验室
+   description: Site description in Chinese...
+ menu:
+   main:
+     - name: 主页
+       url: /
+       weight: 10
+     - name: 研究方向
+       url: research/
+       weight: 20
+     - name: 团队成员
+       url: people/
+       weight: 30
+     - name: 出版物
+       url: publications/
+       weight: 40
+     - name: 项目
+       url: projects/
+       weight: 45
+     - name: 新闻
+       url: news/
+       weight: 50
+     - name: 加入我们
+       url: join/
+       weight: 60
+     - name: 联系我们
+       url: contact/
+       weight: 65

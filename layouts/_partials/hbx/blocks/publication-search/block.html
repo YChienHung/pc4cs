@@ -1,0 +1,137 @@
+{{/* 原生 citation 条目 + 页面内搜索。只查询当前语言的内容。 */}}
+{{ $page := .wcPage }}
+{{ $block := .wcBlock }}
+{{ if not (reflect.IsMap $block) }}{{ $block = dict }}{{ end }}
+{{ $content := index $block "content" }}
+{{ if not (reflect.IsMap $content) }}{{ $content = dict }}{{ end }}
+{{ $folder := "publication" }}
+{{ $folderRaw := index $content "folder" }}
+{{ if eq (printf "%T" $folderRaw) "string" }}
+  {{ with strings.TrimSpace $folderRaw }}{{ $folder = . }}{{ end }}
+{{ end }}
+{{ $papers := sort (where site.RegularPages "Section" $folder) "Date" "desc" }}
+
+{{/* 仅映射数据标识，不维护翻译词表；每篇论文的类型只处理一次。 */}}
+{{ $legacy := dict "0" "uncat" "1" "paper-conference" "2" "article-journal" "3" "article" "4" "report" "5" "book" "6" "chapter" "7" "thesis" "8" "patent" }}
+{{ $rows := slice }}
+{{ $allTypes := slice }}
+{{ range $papers }}
+  {{ $item := . }}
+  {{ $types := slice }}
+  {{ $raw := .Params.publication_types }}
+  {{ $values := slice }}
+  {{ if reflect.IsSlice $raw }}
+    {{ $values = $raw }}
+  {{ else if ne $raw nil }}
+    {{ $values = slice $raw }}
+  {{ end }}
+  {{ range $values }}
+    {{/* 忽略 null、布尔值、映射和嵌套列表；接受字符串及旧数字编号。 */}}
+    {{ $kind := printf "%T" . }}
+    {{ if or (eq $kind "string") (in (slice "int" "int64" "float64" "int32" "float32") $kind) }}
+      {{ $value := lower (strings.TrimSpace (printf "%v" .)) }}
+      {{ with index $legacy $value }}{{ $value = . }}{{ end }}
+      {{ if $value }}{{ $types = $types | append $value }}{{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $types = uniq $types }}
+  {{ $allTypes = $allTypes | union $types }}
+  {{ $abstract := "" }}
+  {{ if eq (printf "%T" .Params.abstract) "string" }}{{ $abstract = .Params.abstract | plainify }}{{ end }}
+  {{ $rows = $rows | append (dict "item" $item "types" $types "abstract" $abstract) }}
+  {{ if and $page (isset .Params "author_notes") }}{{ $page.Store.Set "has_alpine" true }}{{ end }}
+{{ end }}
+
+{{ $title := "" }}
+{{ with index $content "title" }}{{ $title = printf "%v" . | emojify | $page.RenderString }}{{ end }}
+{{ $subtitle := "" }}
+{{ with index $content "subtitle" }}{{ $subtitle = printf "%v" . | emojify | $page.RenderString }}{{ end }}
+{{ $text := "" }}
+{{ with index $content "text" }}{{ $text = printf "%v" . | emojify | $page.RenderString }}{{ end }}
+
+<div class="w-full max-w-6xl mx-auto px-6" data-publication-search>
+  {{/* 标题区显式设定宽度和居中，不依赖父级文字对齐或新增 Tailwind 类的编译。 */}}
+  {{ if or $title $subtitle $text }}
+  <header class="w-full max-w-3xl mx-auto mb-12 text-center"
+          style="width:100%;max-width:48rem;margin-inline:auto;text-align:center;">
+    {{ with $title }}
+    <h2 class="w-full text-center text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white tracking-tight mb-4"
+        style="display:block;width:100%;max-width:none;margin-inline:0;text-align:center;">
+      {{ . }}
+    </h2>
+    {{ end }}
+
+    {{ with $subtitle }}
+    <p class="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3"
+       style="width:100%;max-width:none;margin-inline:0;text-align:center;">
+      {{ . }}
+    </p>
+    {{ end }}
+
+    {{ with $text }}
+    <div class="prose dark:prose-invert mx-auto text-center" style="margin-inline:auto;text-align:center;">
+      {{ . }}
+    </div>
+    {{ end }}
+  </header>
+  {{ end }}
+
+  {{/* 无 JavaScript 时隐藏筛选栏，仍展示全部论文。 */}}
+  <div data-controls hidden>
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+      <label class="w-full sm:w-80 sm:max-w-xs min-w-0 relative">
+        {{ $search := i18n "search_placeholder" | default "Search titles, authors, venues or keywords" }}
+        <span class="sr-only">{{ $search }}</span>
+        <input data-query type="search" placeholder="{{ $search }}" class="block w-full h-10 min-h-0 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm leading-normal px-3 py-0 shadow-sm transition-all duration-200 hover:border-primary-400 hover:shadow-md focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:shadow-md motion-reduce:transition-none">
+      </label>
+      <label class="w-auto shrink-0">
+        <span class="sr-only">{{ i18n "publication_year" | default "Year" }}</span>
+        <select data-year class="pr-8 cursor-pointer block w-full h-10 min-h-0 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm leading-normal px-3 py-0 shadow-sm transition-all duration-200 hover:border-primary-400 hover:shadow-md focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:shadow-md motion-reduce:transition-none">
+          <option value="">{{ i18n "publication_year" | default "Year" }}</option>
+        </select>
+      </label>
+      <label class="w-auto shrink-0">
+        <span class="sr-only">{{ i18n "publication_type" | default "Type" }}</span>
+        <select data-type class="pr-8 cursor-pointer block w-full h-10 min-h-0 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm leading-normal px-3 py-0 shadow-sm transition-all duration-200 hover:border-primary-400 hover:shadow-md focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:shadow-md motion-reduce:transition-none">
+          <option value="">{{ i18n "publication_type" | default "Type" }}</option>
+          {{/* 固定排列顺序；仅显示当前结果中实际存在的已知类型。 */}}
+          {{ range slice "uncat" "paper-conference" "article-journal" "article" "report" "book" "chapter" "thesis" "patent" }}
+            {{ $value := . }}
+            {{ if in $allTypes $value }}
+              {{ $label := "" }}
+              {{ if eq $value "uncat" }}{{ $label = i18n "pub_uncat" | default "Other" }}
+              {{ else if eq $value "paper-conference" }}{{ $label = i18n "pub_paper_conference" | default "Conference paper" }}
+              {{ else if eq $value "article-journal" }}{{ $label = i18n "pub_article_journal" | default "Journal article" }}
+              {{ else if eq $value "article" }}{{ $label = i18n "pub_article" | default "Preprint" }}
+              {{ else if eq $value "report" }}{{ $label = i18n "pub_report" | default "Report" }}
+              {{ else if eq $value "book" }}{{ $label = i18n "pub_book" | default "Book" }}
+              {{ else if eq $value "chapter" }}{{ $label = i18n "pub_chapter" | default "Book chapter" }}
+              {{ else if eq $value "thesis" }}{{ $label = i18n "pub_thesis" | default "Thesis" }}
+              {{ else if eq $value "patent" }}{{ $label = i18n "pub_patent" | default "Patent" }}
+              {{ end }}
+              <option value="{{ $value }}">{{ $label }}</option>
+            {{ end }}
+          {{ end }}
+        </select>
+      </label>
+      <button data-reset type="button" class="w-auto shrink-0 h-10 min-h-0 rounded-lg border border-primary-200 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium leading-normal px-4 py-0 shadow-sm transition-all duration-200 hover:bg-primary-100 dark:hover:bg-primary-900/50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 motion-reduce:transform-none motion-reduce:transition-none">{{ i18n "btn_reset" | default "Reset" }}</button>
+    </div>
+    <p data-count role="status" aria-live="polite" aria-atomic="true" data-count-template="{{ i18n "publications" | default "Publications" }}: {count} / {total}" class="text-center text-base font-medium text-gray-600 dark:text-gray-400 mb-6"></p>
+  </div>
+  {{/* 列表容器居中，内部内容左对齐。 */}}
+  <div data-results class="w-full max-w-4xl mx-auto text-left" style="width:100%;max-width:56rem;margin-inline:auto;text-align:left;">
+    {{ range $index, $row := $rows }}
+      {{ $item := $row.item }}
+      <div data-paper 
+           data-year="{{ $item.Date.Format "2006" }}" 
+           data-types="{{ $row.types | jsonify }}" 
+           data-extra="{{ $row.abstract }} {{ $item.Params.tags | default (slice) | jsonify }}" 
+           class="mb-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-8 py-2 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none"
+      >
+        {{ partial "views/citation.html" (dict "item" $item "page" $page "index" $index) }}
+      </div>
+    {{ end }}
+  </div>
+  <p data-empty {{ if gt (len $papers) 0 }}hidden{{ end }} class="py-8 text-gray-500 dark:text-gray-400">{{ i18n "search_no_results" | default "No results found" }}</p>
+</div>
+<script src="{{ "js/publication-search.js?v=85cf5b89b119" | relURL }}" defer></script>

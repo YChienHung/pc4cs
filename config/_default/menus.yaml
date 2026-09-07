@@ -4,24 +4,103 @@
   #   The weight parameter defines the order that the links will appear in.
 
 main:
-  - name: Bio
+  - name: Home
     url: /
     weight: 10
-  - name: Papers
-    url: /#papers
-    weight: 11
-  - name: Talks
-    url: /#talks
-    weight: 12
-  - name: News
-    url: /#news
-    weight: 13
-  - name: Experience
-    url: experience/
+  - name: Research
+    url: research/
     weight: 20
+  - name: People
+    url: people/
+    weight: 30
+  - name: Publications
+    url: publications/
+    weight: 40
   - name: Projects
     url: projects/
+    weight: 45
+  - name: News
+    url: news/
+    weight: 50
+  - name: Join Us
+    url: join/
+    weight: 60
+  - name: Contact
+    url: contact/
+    weight: 65
+
+
+# Footer links (4-column layout)
+#   Top-level items become column headings, children become links.
+footer:
+  - name: Product
+    weight: 10
+  - parent: Product
+    name: Features
+    url: /#features
+    weight: 10
+  - parent: Product
+    name: Solutions
+    url: /#solutions
+    weight: 20
+  - parent: Product
+    name: Pricing
+    url: /#pricing
     weight: 30
-  - name: Courses
-    url: courses/
+  - parent: Product
+    name: Compare
+    url: /#compare
+    weight: 35
+  - parent: Product
+    name: Changelog
+    url: changelog/
     weight: 40
+
+  - name: Company
+    weight: 20
+  - parent: Company
+    name: About
+    url: "#"
+    weight: 10
+  - parent: Company
+    name: Blog
+    url: /blog/
+    weight: 20
+  - parent: Company
+    name: Careers
+    url: "#"
+    weight: 30
+  - parent: Company
+    name: Contact
+    url: "#"
+    weight: 40
+
+  - name: Resources
+    weight: 30
+  - parent: Resources
+    name: Documentation
+    url: "#"
+    weight: 10
+  - parent: Resources
+    name: Help Center
+    url: "#"
+    weight: 20
+  - parent: Resources
+    name: Community
+    url: "#"
+    weight: 30
+  - parent: Resources
+    name: Status
+    url: "#"
+    weight: 40
+
+  - name: Legal
+    weight: 40
+  - parent: Legal
+    name: Privacy Policy
+    url: /privacy/
+    weight: 10
+  - parent: Legal
+    name: Terms of Service
+    url: /terms/
+    weight: 20

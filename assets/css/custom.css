@@ -1,0 +1,8 @@
+.team-round-avatars .group>.relative>a[aria-label] img {
+    width: 80%;
+    height: 80%;
+    transform: translate(12.5%, 12.5%);
+    border-radius: 50%;
+    /* border: 5px solid var(--color-border); */
+    object-fit: cover;
+}
