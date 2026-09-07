@@ -412,7 +412,7 @@
       {{ range $sortedProfile := $sorted }}
         {{ $profile := $sortedProfile.profile }}
         {{ $avatar := $profile.avatar }}
-        {{ $link := printf "/authors/%s/" $profile.slug | relLangURL }}
+        {{ $link := printf "authors/%s/" $profile.slug | relLangURL }}
         {{ $nameSource := $profile.name_given | default $profile.title | default "?" }}
         {{ $initial := cond (gt (len $nameSource) 0) (upper (substr $nameSource 0 1)) "?" }}
         <div class="group relative">

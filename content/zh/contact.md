@@ -27,7 +27,7 @@ sections:
           referrerpolicy="no-referrer-when-downgrade"
           src="https://www.google.com/maps?q=29.921496,121.663737&z=14&output=embed&hl=zh-CN"
           style="border: 0;"
-        </iframe>
+        ></iframe>
       email: lab@example.edu
       phone: "+1 (555) 123-4567"
       social:
