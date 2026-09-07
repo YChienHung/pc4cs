@@ -15,7 +15,8 @@ hugoblox:
     # Site name - shown in navbar, footer, copyright, and browser title by default
     name: "PC4CS Lab"
     # Legal entity for copyright notices (defaults to name if not set)
-    organization: "Perception and Control for Complex Systems Laboratory"
+    # Perception and Control for Complex Systems Laboratory
+    organization: ""
     # Schema.org type for structured data
     type: organization # person | organization | local_business
     # Short tagline displayed on your site

@@ -1,0 +1,1517 @@
+{{/* 单文件轮播。复用 HugoBlox 图片解析器，无 JSX、额外资源挂载或外部脚本。 */}}
+{{ $page := .wcPage }}
+{{ $content := .wcBlock.content | default dict }}
+{{ $design := .wcBlock.design | default dict }}
+
+{{ if not (reflect.IsMap $content) }}{{ $content = dict }}{{ end }}
+{{ if not (reflect.IsMap $design) }}{{ $design = dict }}{{ end }}
+
+{{ $gallery := partial "functions/resolve_gallery_items.html" (dict "content" $content "Page" $page) }}
+{{ $items := $gallery.items | default (slice) }}
+
+{{ $fade := partial "functions/coerce_bool" (dict "value" $design.edge_fade "default" true) }}
+{{ $autoplay := partial "functions/coerce_bool" (dict "value" $design.autoplay "default" false) }}
+{{ $interval := partial "functions/coerce_int" (dict "value" $design.autoplay_interval "default" 5000 "min" 1000) }}
+{{ $edge := partial "functions/coerce_int" (dict "value" $design.edge_fade_width "default" 10 "min" 0 "max" 30) }}
+
+{{ $captionPosition := $design.caption_position | default "below" }}
+{{ if not (in (slice "below" "overlay" "hover" "none") $captionPosition) }}
+  {{ $captionPosition = "below" }}
+{{ end }}
+
+{{/* 指示点位置独立于标题位置，默认在图片下方。 */}}
+{{ $indicatorPosition := $design.indicator_position | default "below" }}
+{{ if not (in (slice "below" "overlay" "hover" "none") $indicatorPosition) }}
+  {{ $indicatorPosition = "below" }}
+{{ end }}
+
+{{ $rowHeight := partial "functions/coerce_int" (dict "value" $design.row_height "default" 0 "min" 0) }}
+
+{{ $ratio := "16 / 9" }}
+{{ if eq $design.aspect_ratio "landscape" }}{{ $ratio = "4 / 3" }}{{ end }}
+{{ if eq $design.aspect_ratio "square" }}{{ $ratio = "1 / 1" }}{{ end }}
+
+{{ if gt (len $items) 0 }}
+
+<section
+  class="gw-block"
+  data-gallery-wide
+  data-autoplay="{{ $autoplay }}"
+  data-interval="{{ $interval }}"
+  aria-roledescription="carousel"
+  aria-label="{{ $content.title | default "Gallery" | plainify }}"
+  style="--gw-ratio:{{ $ratio | safeCSS }};--gw-edge:{{ printf "%d%%" $edge | safeCSS }};"
+>
+
+  {{ if or $content.title $content.subtitle }}
+  <header class="text-center max-w-3xl mx-auto mb-6 px-4">
+    {{ with $content.title }}
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+      {{ $page.RenderString . }}
+    </h2>
+    {{ end }}
+
+    {{ with $content.subtitle }}
+    <div class="text-lg text-gray-600 dark:text-gray-400">
+      {{ $page.RenderString . }}
+    </div>
+    {{ end }}
+  </header>
+  {{ end }}
+
+  {{/* 无脚本时显示第一张图片；控件初始化后才显示。 */}}
+  <div
+    class="gw-stage {{ if eq $captionPosition "hover" }}gw-caption-hover{{ end }} {{ if in (slice "overlay" "hover") $indicatorPosition }}gw-has-overlay-indicators{{ end }}"
+    {{ if gt $rowHeight 0 }}
+    style="height:{{ printf "%dpx" $rowHeight | safeCSS }};aspect-ratio:auto;"
+    {{ end }}
+  >
+
+    {{ range $i, $item := $items }}
+
+      {{ $url := "" }}
+      {{ $external := false }}
+
+      {{ with $item.link }}
+        {{ $raw := strings.TrimSpace . }}
+        {{ $scheme := lower (urls.Parse $raw).Scheme }}
+
+        {{ if or (in (slice "http" "https") $scheme) (hasPrefix $raw "//") }}
+          {{ $url = $raw }}
+          {{ $external = true }}
+        {{ else if eq $scheme "" }}
+          {{ if hasPrefix $raw "#" }}
+            {{ $url = $raw }}
+          {{ else }}
+            {{ $url = $raw | relLangURL }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+
+      <div
+        class="gw-slide"
+        data-gw-slide
+        {{ if gt $i 0 }}hidden{{ end }}
+        role="group"
+        aria-roledescription="slide"
+        aria-label="{{ add $i 1 }} / {{ len $items }}"
+        aria-hidden="{{ if eq $i 0 }}false{{ else }}true{{ end }}"
+      >
+
+        <div class="gw-media {{ if $fade }}gw-fade{{ end }}">
+
+          {{ if $url }}
+          <a
+            href="{{ $url }}"
+            {{ if $external }}
+            target="_blank"
+            rel="noopener noreferrer"
+            {{ end }}
+          >
+          {{ end }}
+
+          <img
+            src="{{ $item.src }}"
+            {{ with $item.srcset }}srcset="{{ . }}"{{ end }}
+            sizes="100vw"
+            width="{{ $item.width }}"
+            height="{{ $item.height }}"
+            alt="{{ $item.alt }}"
+            loading="{{ if eq $i 0 }}eager{{ else }}lazy{{ end }}"
+            decoding="async"
+          >
+
+          {{ if $url }}
+          </a>
+          {{ end }}
+
+        </div>
+
+        {{ if in (slice "overlay" "hover") $captionPosition }}
+        <div class="gw-overlay">
+          {{ with $item.title }}
+          <div class="font-semibold">
+            {{ . | safeHTML }}
+          </div>
+          {{ end }}
+
+          {{ with $item.caption }}
+          <div>
+            {{ . | safeHTML }}
+          </div>
+          {{ end }}
+
+          {{ with $item.credit }}
+          <div class="text-xs mt-1">
+            {{ . | safeHTML }}
+          </div>
+          {{ end }}
+        </div>
+        {{ end }}
+
+      </div>
+
+    {{ end }}
+
+    {{ if gt (len $items) 1 }}
+
+    <button
+      class="gw-arrow gw-prev"
+      data-gw-prev
+      type="button"
+      hidden
+      aria-label="{{ i18n "previous" | default "Previous" }}"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          d="m14 6-6 6 6 6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <button
+      class="gw-arrow gw-next"
+      data-gw-next
+      type="button"
+      hidden
+      aria-label="{{ i18n "next" | default "Next" }}"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          d="m10 6 6 6-6 6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    {{ end }}
+
+    {{ if in (slice "overlay" "hover") $indicatorPosition }}
+      {{ if gt (len $items) 1 }}
+
+      <div
+        class="gw-controls gw-indicators-{{ $indicatorPosition }}"
+        data-gw-controls
+        hidden
+      >
+        {{ range $i, $_ := $items }}
+        <button
+          class="gw-dot"
+          data-gw-dot
+          type="button"
+          aria-label="{{ add $i 1 }} / {{ len $items }}"
+          aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+        ></button>
+        {{ end }}
+      </div>
+
+      {{ end }}
+    {{ end }}
+
+  </div>
+
+  {{ if in (slice "below" "none") $indicatorPosition }}
+    {{ if gt (len $items) 1 }}
+
+    <div
+      class="gw-controls gw-indicators-{{ $indicatorPosition }}"
+      data-gw-controls
+      hidden
+    >
+      {{ range $i, $_ := $items }}
+      <button
+        class="gw-dot"
+        data-gw-dot
+        type="button"
+        aria-label="{{ add $i 1 }} / {{ len $items }}"
+        aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+      ></button>
+      {{ end }}
+    </div>
+
+    {{ end }}
+  {{ end }}
+
+  <div
+    class="gw-captions"
+    aria-live="off"
+    {{ if ne $captionPosition "below" }}hidden{{ end }}
+  >
+    {{ range $i, $item := $items }}
+
+    <div
+      data-gw-caption
+      {{ if gt $i 0 }}hidden{{ end }}
+    >
+      {{ with $item.title }}
+      <div class="font-semibold text-gray-900 dark:text-white">
+        {{ . | safeHTML }}
+      </div>
+      {{ end }}
+
+      {{ with $item.caption }}
+      <div>
+        {{ . | safeHTML }}
+      </div>
+      {{ end }}
+
+      {{ with $item.credit }}
+      <div class="text-xs mt-1">
+        {{ . | safeHTML }}
+      </div>
+      {{ end }}
+    </div>
+
+    {{ end }}
+  </div>
+
+</section>
+
+
+<style>
+
+/* =========================================================
+   基础布局
+   ========================================================= */
+
+.gw-block {
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+}
+
+.gw-block [hidden] {
+  display: none !important;
+}
+
+.gw-stage {
+  position: relative;
+  width: 100%;
+
+  aspect-ratio: var(--gw-ratio, 16 / 9);
+
+  overflow: hidden;
+
+  border-radius: 0;
+}
+
+
+/* =========================================================
+   Slide
+   ========================================================= */
+
+.gw-slide,
+.gw-media,
+.gw-media > a {
+  position: absolute;
+  inset: 0;
+
+  display: block;
+}
+
+.gw-slide {
+  overflow: hidden;
+
+  /*
+   * 左右滑动动画主要使用 transform。
+   */
+  will-change: transform;
+
+  /*
+   * GPU 合成时降低闪烁概率。
+   */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gw-media img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  border-radius: 0;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+}
+
+
+/* =========================================================
+   保留原始图片边缘渐隐方案
+   ========================================================= */
+
+.gw-fade {
+  background: #000;
+}
+
+.gw-fade img {
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--gw-edge, 10%),
+      #000 calc(100% - var(--gw-edge, 10%)),
+      transparent
+    );
+
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--gw-edge, 10%),
+      #000 calc(100% - var(--gw-edge, 10%)),
+      transparent
+    );
+}
+
+
+/* =========================================================
+   左右箭头
+   ========================================================= */
+
+.gw-block .gw-arrow {
+  position: absolute;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+
+  min-width: 52px;
+  min-height: 52px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgb(255 255 255 / 0.92);
+
+  color: #111827;
+
+  line-height: 1;
+
+  box-shadow: 0 2px 8px #0003;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.gw-block .gw-arrow:hover {
+  transform:
+    translateY(-50%)
+    scale(1.06);
+
+  box-shadow: 0 4px 14px #0004;
+}
+
+.gw-block .gw-arrow:active {
+  transform:
+    translateY(-50%)
+    scale(0.96);
+}
+
+.gw-block .gw-arrow svg {
+  display: block;
+
+  flex: none;
+
+  width: 28px;
+  height: 28px;
+
+  margin: 0;
+}
+
+.gw-prev {
+  left: clamp(20px, 6%, 96px);
+}
+
+.gw-next {
+  right: clamp(20px, 6%, 96px);
+}
+
+
+/* =========================================================
+   Overlay Caption
+   ========================================================= */
+
+.gw-overlay {
+  position: absolute;
+
+  inset: auto 0 0;
+
+  padding: 40px 72px 20px;
+
+  text-align: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      transparent,
+      rgba(0, 0, 0, 0.7)
+    );
+
+  pointer-events: none;
+
+  font-size: 16px;
+}
+
+.gw-caption-hover .gw-overlay {
+  opacity: 0;
+
+  transition: opacity 0.2s;
+}
+
+.gw-caption-hover:hover .gw-overlay,
+.gw-caption-hover:focus-within .gw-overlay {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .gw-caption-hover .gw-overlay {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .gw-overlay {
+    padding: 24px 16px 12px;
+
+    font-size: 14px;
+  }
+}
+
+.gw-has-overlay-indicators .gw-overlay {
+  padding-bottom: 56px;
+}
+
+
+/* =========================================================
+   图片下方 Caption
+   ========================================================= */
+
+.gw-captions {
+  max-width: 48rem;
+
+  margin: 12px auto 0;
+
+  padding-inline: 16px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   指示点
+   ========================================================= */
+
+.gw-block .gw-controls {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 6px;
+
+  width: 100%;
+
+  margin: 10px auto 0;
+
+  padding: 0;
+}
+
+.gw-block .gw-dot {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 32px;
+
+  box-sizing: border-box;
+
+  width: 32px;
+  height: 32px;
+
+  min-width: 32px;
+  min-height: 32px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  appearance: none;
+
+  cursor: pointer;
+
+  line-height: 1;
+}
+
+.gw-block .gw-dot::before {
+  display: block;
+
+  content: "";
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #94a3b8;
+
+  transition:
+    background 0.2s,
+    width 0.2s,
+    border-radius 0.2s,
+    transform 0.2s;
+}
+
+.gw-block .gw-dot:hover::before {
+  transform: scale(1.15);
+}
+
+.gw-block .gw-dot[aria-current="true"]::before {
+  width: 24px;
+  height: 10px;
+
+  border-radius: 4px;
+
+  background: #475569;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   Focus
+   ========================================================= */
+
+.gw-block button:focus-visible,
+.gw-media a:focus-visible {
+  outline: 2px solid #6366f1;
+
+  outline-offset: -3px;
+}
+
+
+/* =========================================================
+   Dark Mode
+   ========================================================= */
+
+.dark .gw-arrow {
+  background: #1f2937;
+
+  color: #f9fafb;
+}
+
+.dark .gw-captions {
+  color: #cbd5e1;
+}
+
+.dark .gw-dot[aria-current="true"]::before {
+  background: #e2e8f0;
+}
+
+
+/* =========================================================
+   指示点位置
+   ========================================================= */
+
+.gw-block .gw-controls.gw-indicators-none {
+  display: none !important;
+}
+
+.gw-block .gw-controls.gw-indicators-overlay,
+.gw-block .gw-controls.gw-indicators-hover {
+  position: absolute;
+
+  bottom: 10px;
+  left: 0;
+
+  z-index: 3;
+
+  margin: 0;
+}
+
+.gw-block .gw-controls.gw-indicators-hover {
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.2s;
+}
+
+.gw-stage:hover .gw-controls.gw-indicators-hover,
+.gw-stage:focus-within .gw-controls.gw-indicators-hover {
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+.gw-block .gw-indicators-overlay .gw-dot::before,
+.gw-block .gw-indicators-hover .gw-dot::before {
+  background: rgb(255 255 255 / 0.55);
+
+  box-shadow: 0 1px 4px #0005;
+}
+
+.gw-block .gw-indicators-overlay .gw-dot[aria-current="true"]::before,
+.gw-block .gw-indicators-hover .gw-dot[aria-current="true"]::before {
+  background: #fff;
+}
+
+@media (hover: none) {
+  .gw-block .gw-controls.gw-indicators-hover {
+    opacity: 1;
+
+    pointer-events: auto;
+  }
+}
+
+
+/* =========================================================
+   Reduced Motion
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-block .gw-dot::before,
+  .gw-block .gw-controls.gw-indicators-hover,
+  .gw-caption-hover .gw-overlay,
+  .gw-block .gw-arrow {
+    transition: none;
+  }
+}
+
+</style>
+
+
+<script>
+(() => {
+
+  function init() {
+
+    document
+      .querySelectorAll('[data-gallery-wide]')
+      .forEach(root => {
+
+        /*
+         * 防止重复初始化。
+         */
+        if (root.dataset.ready) {
+          return;
+        }
+
+        root.dataset.ready = 'true';
+
+
+        const slides = [
+          ...root.querySelectorAll('[data-gw-slide]')
+        ];
+
+        const captions = [
+          ...root.querySelectorAll('[data-gw-caption]')
+        ];
+
+        const dots = [
+          ...root.querySelectorAll('[data-gw-dot]')
+        ];
+
+
+        /*
+         * 只有一张图片时无需初始化轮播。
+         */
+        if (slides.length < 2) {
+          return;
+        }
+
+
+        const reduced = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        );
+
+
+        let index = 0;
+
+        let timer = null;
+
+        let hover = false;
+
+        let focus = false;
+
+        let manualPause = reduced.matches;
+
+
+        /*
+         * 当前正在运行的 Web Animation。
+         */
+        let animations = [];
+
+
+        /*
+         * 防止快速连续切换时旧动画 onfinish
+         * 覆盖新的 slide 状态。
+         */
+        let revision = 0;
+
+
+        const auto =
+          root.dataset.autoplay === 'true';
+
+
+        const delay = Math.max(
+          1000,
+          Number(root.dataset.interval) || 5000
+        );
+
+
+        /*
+         * =================================================
+         * 自动播放
+         * =================================================
+         */
+
+        function schedule() {
+
+          clearTimeout(timer);
+
+          timer = null;
+
+
+          if (
+            auto &&
+            !manualPause &&
+            !hover &&
+            !focus &&
+            !document.hidden &&
+            root.isConnected
+          ) {
+
+            timer = setTimeout(
+              () => {
+
+                /*
+                 * 自动播放始终向右进入下一张，
+                 * 即视觉上整体向左滑动。
+                 */
+                show(
+                  index + 1,
+                  1
+                );
+
+              },
+              delay
+            );
+
+          }
+
+        }
+
+
+        /*
+         * =================================================
+         * 取消当前动画
+         * =================================================
+         */
+
+        function cancelAnimations() {
+
+          animations.forEach(animation => {
+
+            animation.onfinish = null;
+
+            try {
+              animation.cancel();
+            } catch (_) {}
+
+          });
+
+
+          animations = [];
+
+        }
+
+
+        /*
+         * =================================================
+         * 清理 slide
+         * =================================================
+         */
+
+        function cleanupSlides(activeIndex) {
+
+          slides.forEach((slide, i) => {
+
+            const active =
+              i === activeIndex;
+
+
+            slide.hidden =
+              !active;
+
+
+            slide.inert =
+              !active;
+
+
+            slide.setAttribute(
+              'aria-hidden',
+              String(!active)
+            );
+
+
+            slide.style.zIndex = '';
+
+            slide.style.transform = '';
+
+          });
+
+        }
+
+
+        /*
+         * =================================================
+         * 切换 Slide
+         * =================================================
+         *
+         * direction:
+         *
+         *  1  = Next
+         *
+         *       当前图片向左离开
+         *       下一图片从右侧进入
+         *
+         *
+         * -1  = Previous
+         *
+         *       当前图片向右离开
+         *       上一图片从左侧进入
+         *
+         *
+         * null = indicator 点击时自动判断方向
+         *
+         * =================================================
+         */
+
+        function show(
+          next,
+          direction = null
+        ) {
+
+          /*
+           * 环形索引。
+           */
+          next =
+            (
+              next +
+              slides.length
+            ) %
+            slides.length;
+
+
+          if (next === index) {
+
+            schedule();
+
+            return;
+
+          }
+
+
+          const old =
+            index;
+
+
+          const token =
+            ++revision;
+
+
+          /*
+           * indicator 点击时自动计算最短方向。
+           */
+          if (direction === null) {
+
+            const forwardDistance =
+              (
+                next -
+                old +
+                slides.length
+              ) %
+              slides.length;
+
+
+            const backwardDistance =
+              (
+                old -
+                next +
+                slides.length
+              ) %
+              slides.length;
+
+
+            direction =
+              forwardDistance <= backwardDistance
+                ? 1
+                : -1;
+
+          }
+
+
+          /*
+           * 如果用户快速连续点击，
+           * 停止上一轮未完成动画。
+           */
+          cancelAnimations();
+
+
+          /*
+           * 只保留 old 与 next 两张参与动画。
+           */
+          slides.forEach(
+            (slide, i) => {
+
+              const visible =
+                i === old ||
+                i === next;
+
+
+              slide.hidden =
+                !visible;
+
+
+              slide.inert =
+                i !== next;
+
+
+              slide.setAttribute(
+                'aria-hidden',
+                String(i !== next)
+              );
+
+
+              slide.style.zIndex =
+                visible
+                  ? '1'
+                  : '0';
+
+
+              slide.style.transform = '';
+
+            }
+          );
+
+
+          /*
+           * caption 立即切换。
+           */
+          captions.forEach(
+            (caption, i) => {
+
+              caption.hidden =
+                i !== next;
+
+            }
+          );
+
+
+          /*
+           * 更新当前索引。
+           */
+          index =
+            next;
+
+
+          /*
+           * 更新指示点。
+           */
+          dots.forEach(
+            (dot, i) => {
+
+              dot.setAttribute(
+                'aria-current',
+                String(i === index)
+              );
+
+            }
+          );
+
+
+          /*
+           * reduced motion：
+           * 直接切换，不播放动画。
+           */
+          if (
+            reduced.matches ||
+            typeof slides[next].animate !== 'function'
+          ) {
+
+            cleanupSlides(index);
+
+            schedule();
+
+            return;
+
+          }
+
+
+          /*
+           * =================================================
+           * 左右滑动动画
+           * =================================================
+           *
+           * Next:
+           *
+           * old:
+           *
+           *       0%  -> -100%
+           *
+           * next:
+           *
+           *     100%  -> 0%
+           *
+           *
+           * Previous:
+           *
+           * old:
+           *
+           *       0%  -> 100%
+           *
+           * next:
+           *
+           *    -100%  -> 0%
+           *
+           * =================================================
+           */
+
+          const outgoingEnd =
+            direction > 0
+              ? '-100%'
+              : '100%';
+
+
+          const incomingStart =
+            direction > 0
+              ? '100%'
+              : '-100%';
+
+
+          /*
+           * 相比 ease-in-out，
+           * 这个曲线起步较快、停止更柔和，
+           * 用于大图轮播更自然。
+           */
+          const animationOptions = {
+
+            duration: 600,
+
+            easing:
+              'cubic-bezier(0.22, 1, 0.36, 1)',
+
+            fill:
+              'forwards'
+
+          };
+
+
+          /*
+           * 当前图片离开。
+           */
+          const outgoing =
+            slides[old].animate(
+
+              [
+                {
+                  transform:
+                    'translate3d(0, 0, 0)'
+                },
+
+                {
+                  transform:
+                    `translate3d(${outgoingEnd}, 0, 0)`
+                }
+              ],
+
+              animationOptions
+
+            );
+
+
+          /*
+           * 新图片进入。
+           */
+          const incoming =
+            slides[next].animate(
+
+              [
+                {
+                  transform:
+                    `translate3d(${incomingStart}, 0, 0)`
+                },
+
+                {
+                  transform:
+                    'translate3d(0, 0, 0)'
+                }
+              ],
+
+              animationOptions
+
+            );
+
+
+          animations = [
+            outgoing,
+            incoming
+          ];
+
+
+          /*
+           * 新图片动画结束后，
+           * 恢复为只有当前 slide 显示。
+           */
+          incoming.onfinish = () => {
+
+            /*
+             * 如果期间又发生了 show()，
+             * 当前 finish 已经失效。
+             */
+            if (token !== revision) {
+              return;
+            }
+
+
+            cleanupSlides(index);
+
+
+            /*
+             * 清除 fill: forwards 状态。
+             */
+            cancelAnimations();
+
+          };
+
+
+          schedule();
+
+        }
+
+
+        /*
+         * =================================================
+         * 控件初始化
+         * =================================================
+         */
+
+        const prev =
+          root.querySelector('[data-gw-prev]');
+
+
+        const next =
+          root.querySelector('[data-gw-next]');
+
+
+        const controls = [
+          ...root.querySelectorAll('[data-gw-controls]')
+        ];
+
+
+        if (prev) {
+          prev.hidden = false;
+        }
+
+
+        if (next) {
+          next.hidden = false;
+        }
+
+
+        controls.forEach(control => {
+
+          control.hidden = false;
+
+        });
+
+
+        /*
+         * =================================================
+         * Previous
+         * =================================================
+         */
+
+        prev?.addEventListener(
+          'click',
+          () => {
+
+            show(
+              index - 1,
+              -1
+            );
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * Next
+         * =================================================
+         */
+
+        next?.addEventListener(
+          'click',
+          () => {
+
+            show(
+              index + 1,
+              1
+            );
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * Indicator
+         * =================================================
+         */
+
+        dots.forEach(
+          (dot, i) => {
+
+            dot.addEventListener(
+              'click',
+              () => {
+
+                show(i);
+
+              }
+            );
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * Hover 暂停 autoplay
+         * =================================================
+         */
+
+        root.addEventListener(
+          'mouseenter',
+          () => {
+
+            hover = true;
+
+            schedule();
+
+          }
+        );
+
+
+        root.addEventListener(
+          'mouseleave',
+          () => {
+
+            hover = false;
+
+            schedule();
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * Focus 暂停 autoplay
+         * =================================================
+         */
+
+        root.addEventListener(
+          'focusin',
+          () => {
+
+            focus = true;
+
+            schedule();
+
+          }
+        );
+
+
+        root.addEventListener(
+          'focusout',
+          event => {
+
+            focus =
+              root.contains(
+                event.relatedTarget
+              );
+
+            schedule();
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * 键盘左右方向键
+         * =================================================
+         */
+
+        root.addEventListener(
+          'keydown',
+          event => {
+
+            if (
+              event.key !== 'ArrowLeft' &&
+              event.key !== 'ArrowRight'
+            ) {
+              return;
+            }
+
+
+            event.preventDefault();
+
+
+            if (
+              event.key === 'ArrowRight'
+            ) {
+
+              show(
+                index + 1,
+                1
+              );
+
+            } else {
+
+              show(
+                index - 1,
+                -1
+              );
+
+            }
+
+          }
+        );
+
+
+        /*
+         * =================================================
+         * 页面切换到后台时暂停 autoplay
+         * =================================================
+         */
+
+        document.addEventListener(
+          'visibilitychange',
+          schedule
+        );
+
+
+        /*
+         * =================================================
+         * Reduced Motion
+         * =================================================
+         */
+
+        reduced.addEventListener(
+          'change',
+          () => {
+
+            if (reduced.matches) {
+
+              manualPause = true;
+
+              revision++;
+
+              cancelAnimations();
+
+              cleanupSlides(index);
+
+            }
+
+            schedule();
+
+          }
+        );
+
+
+        /*
+         * 启动 autoplay。
+         */
+        schedule();
+
+      });
+
+  }
+
+
+  if (
+    document.readyState === 'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      init,
+      {
+        once: true
+      }
+    );
+
+  } else {
+
+    init();
+
+  }
+
+})();
+</script>
+
+{{ end }}

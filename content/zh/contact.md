@@ -53,47 +53,7 @@ sections:
     design:
       # css_class: "bg-gray-50 dark:bg-gray-900"
       spacing:
-        padding: ["3rem", 0, "3rem", 0]
+        padding: ["1rem", 0, "1rem", 0]
 
+# var point = new BMap.Point(121.6716, 29.9283);
 ---
-<!-- 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>点标记的拖拽</title>
-<link rel="stylesheet" href="https://mapopen-docs-jsdemo.bj.bcebos.com/jsdemo/assets/iframe-ui-CXHGEBD7.css">
-<script src="https://api.map.baidu.com/api?v=4.0&ak=您的密钥"></script>
-<style>
-html,
-body,
-#map {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-</style>
-</head>
-<body>
-<div id="map"></div>
-<div class="operate">
-  <button onclick="marker.enableDragging()">可拖拽</button>
-  <button onclick="marker.disableDragging()">不可拖拽</button>
-</div>
-
-<script>
-// 百度地图API功能
-var map = new BMap.Map('map');
-var point = new BMap.Point(121.6716, 29.9283);
-map.centerAndZoom(point, 18);
-var marker = new BMap.Marker(point, {
-  // 启用拖拽
-  enableDragging: true,
-}); // 创建标注
-map.addOverlay(marker); // 将标注添加到地图中
-
-</script>
-</body>
-</html> -->

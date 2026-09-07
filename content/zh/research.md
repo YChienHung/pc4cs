@@ -5,9 +5,9 @@ type: landing
 sections:
   - block: research-areas
     content:
-      title: Research Focus Areas
-      subtitle: Advancing Science Through Innovation
-      text: Our lab conducts cutting-edge research across multiple domains
+      title: 研究方向
+      subtitle: 聚焦前沿研究，探索智能未来
+      text: 围绕多个前沿领域开展深入研究，探索关键科学问题与创新技术。
       items:
         - name: Computational Biology
           description: Developing algorithms for genomic analysis and protein structure prediction
@@ -54,5 +54,7 @@ sections:
           funding: $1.2M
     design:
       layout: cards
+      spacing:
+        padding: ["0rem", 0, "1rem", 0]
       
 ---
