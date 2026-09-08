@@ -1,0 +1,38 @@
+---
+title: Current practice and challenges towards handling uncertainty for effective
+  outcomes in maintenance
+authors:
+- Alexander Grenyer
+- Fateme Dinmohammadi
+- John Erkoyuncu
+- Yifan Zhao
+- Rajkumar Roy
+date: '2020-01-01'
+publishDate: '2026-09-08T04:51:43.389332Z'
+publication_types:
+- article-journal
+publication: '*Elsevier*'
+doi: 10.1016/j.procir.2020.01.024
+abstract: 'The combination of viable heuristic attributes with statistical measurements
+  presents significant challenges in industrial maintenance for complex assets under
+  through-life service contracts. Techniques to obtain and process heuristic attributes
+  raise numerous uncertainties which often go undefined and unmitigated. A holistic
+  view of these uncertainties may improve decision-making capabilities and reduce
+  maintenance costs and turnaround time. It is therefore necessary to identify and
+  rank factors that influence uncertainties originating from challenges in the above
+  context. This, along with an identification of who contributes to such challenges
+  and current practice to handle them, sets the focus for this study. The influence
+  of 32 categorised factors on uncertainty is assessed through a questionnaire completed
+  by nine experienced maintenance managers from a leading defence company. The pedigree
+  approach is applied to score validity of respondents’ answers according to their
+  experience and job role to normalise scores. Results are discussed in interviews
+  with respondents along with current practice in and ways to improve uncertainty
+  assessment. Scores are weighted through the Analytical Hierarchy Process (AHP) in
+  order to identify the most influential factors on uncertainty in maintenance. The
+  analysis revealed that these include: intellectual property rights (IPR), maintainer
+  performance, quality of information, resistance to change, stakeholder communication
+  and technology integration. These are verified with 40 practitioners from various
+  industrial backgrounds. From the interviews, it is deemed that a holistic view of
+  heuristic and statistical attributes ultimately allows for more accomplished decision-making
+  but requires trade-offs between quality and cost over the asset’s life cycle.'
+---
