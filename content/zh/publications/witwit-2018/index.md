@@ -1,0 +1,18 @@
+---
+title: Global motion based video super-resolution reconstruction using discrete wavelet
+  transform
+authors:
+- Wasnaa Witwit
+- yifanzhao
+- Karl Jenkins
+- Sri Addepalli
+date: '2018-04-01'
+publishDate: '2026-09-08T04:46:51.733649Z'
+publication_types:
+- article-journal
+publication: '*Multimedia Tools and Applications*'
+doi: 10.1007/s11042-018-5941-5
+links:
+- name: URL
+  url: http://dx.doi.org/10.1007/s11042-018-5941-5
+---
