@@ -1,0 +1,40 @@
+---
+title: Region-based saliency estimation for 3D shape analysis and understanding
+authors:
+- Yitian Zhao
+- Yonghuai Liu
+- Yongjun Wang
+- Baogang Wei
+- Jian Yang
+- yifanzhao
+- Yongtian Wang
+date: '2016-01-01'
+publishDate: '2026-09-09T07:49:03.534845Z'
+publication_types:
+- article-journal
+publication:
+  name: Neurocomputing
+  volume: '197'
+  issue: July
+  pages: 1–13
+  publisher: Elsevier
+abstract: 'The detection of salient regions is an important pre-processing step for
+  many 3D shape analysis and understanding tasks. This paper proposes a novel method
+  for saliency detection in 3D free form shapes. Firstly, we smooth the surface normals
+  by a bilateral filter. Such a method is capable of smoothing the surfaces and retaining
+  the local details. Secondly, a novel method is proposed for the estimation of the
+  saliency value of each vertex. To this end, two new features are defined: Retinex-based
+  Importance Feature (RIF) and Relative Normal Distance (RND). They are based on the
+  human visual perception characteristics and surface geometry respectively. Since
+  the vertex based method cannot guarantee that the detected salient regions are semantically
+  continuous and complete, we propose to refine such values based on surface patches.
+  The detected saliency is finally used to guide the existing techniques for mesh
+  simplification, interest point detection, and overlapping point cloud registration.
+  The comparative studies based on real data from three publicly accessible databases
+  show that the proposed method usually outperforms five selected state of the art
+  ones both qualitatively and quantitatively for saliency detection and 3D shape analysis
+  and understanding. '
+hugoblox:
+  ids:
+    doi: 10.1016/j.neucom.2016.01.012
+---

@@ -1,0 +1,48 @@
+---
+title: A century of variation in the dependence of Greenland iceberg calving on 
+  ice sheet surface mass balance and regional climate change
+authors:
+- G. R. Bigg
+- H. L. Wei
+- D. J. Wilton
+- Y. Zhao
+- S. A. Billings
+- E. Hanna
+- V. Kadirkamanathan
+date: '2014-01-01'
+publishDate: '2026-09-09T07:49:03.567362Z'
+publication_types:
+- article-journal
+publication:
+  name: 'Proceedings of the Royal Society A: Mathematical, Physical and Engineering
+    Sciences'
+  volume: '470'
+  issue: '2166'
+  pages: '20130662'
+  publisher: Royal Society, The
+abstract: Iceberg calving is a major component of the total mass balance of the 
+  Greenland ice sheet (GrIS). A century-long record of Greenland icebergs comes 
+  from the International Ice Patrol's record of icebergs (I48N) passing latitude
+  48° N, off Newfoundland. I48N exhibits strong interannual variability, with a 
+  significant increase in amplitude over recent decades. In this study, we show,
+  through a combination of nonlinear system identification and coupled 
+  ocean-iceberg modelling, that I48N's variability is predominantly caused by 
+  fluctuation in GrIS calving discharge rather than open ocean iceberg melting. 
+  We also demonstrate that the episodic variation in iceberg discharge is 
+  strongly linked to a nonlinear combination of recent changes in the surface 
+  mass balance (SMB) of the GrIS and regional atmospheric and oceanic climate 
+  variability, on the scale of the previous 1-3 years, with the dominant causal 
+  mechanism shifting between glaciological (SMB) and climatic (ocean 
+  temperature) over time. We suggest that this is a change in whether glacial 
+  run-off or under-ice melting is dominant, respectively. We also suggest that 
+  GrIS calving discharge is episodic on at least a regional scale and has 
+  recently been increasing significantly, largely as a result of west Greenland 
+  sources.
+hugoblox:
+  ids:
+    doi: 10.1098/rspa.2013.0662
+links:
+- name: URL
+  url: http://www.scopus.com/inward/record.url?partnerID=yv4JPVwI   
+    eid=2-s2.0-84899789993   md5=b5f51fe52cb3f2b45f8d2540f0363ff6
+---

@@ -1,0 +1,34 @@
+---
+title: Degradation assessment of industrial composites using thermography
+authors:
+- yifanzhao
+- Jörn Mehnen
+- Wei Xu
+- Mosab Alrashed
+- Stephen Abineri
+- Rajkumar Roy
+date: '2015-01-01'
+publishDate: '2026-09-09T07:49:03.555703Z'
+publication_types:
+- article-journal
+publication:
+  name: Procedia CIRP
+  volume: '38'
+  pages: 147–152
+  publisher: Elsevier
+abstract: 'Thermographic inspection is a relatively new technique for Non-Destructive
+  Testing (NDT) which has been gathering increasing interest due to its relatively
+  low cost hardware and extremely fast data acquisition properties. This technique
+  is especially promising in the area of rapid automated damage detection and quantification.
+  In collaboration with a major industry partner from the aerospace sector advanced
+  thermography-based NDT software for impact damaged composites is introduced. The
+  software is based on correlation analysis of time-temperature profiles in combination
+  with an image enhancement process. The prototype software is aiming to a) better
+  visualise the damages in a relatively easy-to-use way and b) automatically and quantitatively
+  measure the properties of the degradation. Knowing that degradation properties play
+  an important role in the identification of degradation types, tests and results
+  on specimens which were artificially damaged have been performed and analyzed.  '
+hugoblox:
+  ids:
+    doi: 10.1016/j.procir.2015.07.045
+---

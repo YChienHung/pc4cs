@@ -68,3 +68,7 @@ Desktop.ini
 
 *.log
 npm-debug.log*
+
+# python
+.venv/
+__pycache__/
