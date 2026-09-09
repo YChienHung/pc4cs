@@ -1,0 +1,36 @@
+---
+title: An AI-powered navigation framework to achieve an automated acquisition of cardiac
+  ultrasound images
+authors:
+- Raska Soemantoro
+- Attila Kardos
+- Gilbert Tang
+- Yifan Zhao
+date: '2023-01-01'
+publishDate: '2026-09-09T13:08:38.890398Z'
+publication_types:
+- article-journal
+publication: '*Scientific Reports*'
+doi: 10.1038/s41598-023-42263-2
+abstract: 'Echocardiography is an effective tool for diagnosing cardiovascular disease.
+  However, numerous challenges affect its accessibility, including skill requirements,
+  workforce shortage, and sonographer strain. We introduce a navigation framework
+  for the automated acquisition of echocardiography images, consisting of 3 modules:
+  perception, intelligence, and control. The perception module contains an ultrasound
+  probe, a probe actuator, and a locator camera. Information from this module is sent
+  to the intelligence module, which grades the quality of an ultrasound image for
+  different echocardiography views. The window search algorithm in the control module
+  governs the decision-making process in probe movement, finding the best location
+  based on known probe traversal positions and image quality. We conducted a series
+  of simulations using the HeartWorks simulator to assess the proposed framework.
+  This study achieved an accuracy of 99% for the image quality model, 96% for the
+  probe locator model, and 99% for the view classification model, trained on an 80/20
+  training and testing split. We found that the best search area corresponds with
+  general guidelines: at the anatomical left of the sternum between the 2nd and 5th
+  intercostal space. Additionally, the likelihood of successful acquisition is also
+  driven by how long it stores past coordinates and how much it corrects itself. Results
+  suggest that achieving an automated echocardiography system is feasible using the
+  proposed framework. The long-term vision is of a widely accessible and accurate
+  heart imaging capability within hospitals and community-based settings that enables
+  timely diagnosis of early-stage heart disease.'
+---

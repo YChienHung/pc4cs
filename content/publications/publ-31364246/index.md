@@ -1,0 +1,26 @@
+---
+title: Effect of triptorelin on the protection from damage on mouse ovarian cells
+  caused by tripterygium polyglycoside
+authors:
+- Yifan Zhao
+date: '2021-01-01'
+publishDate: '2026-09-09T13:08:39.039481Z'
+publication_types:
+- article-journal
+publication: '*European Journal of Gynaecological Oncology*'
+doi: 10.31083/j.ejgo.2021.02.2299
+abstract: 'To investigate the effect of triptorelin on the protection of tripterygium
+  polyglycoside-induced damage to ovarian function on mouse ovarian cells through
+  the study of Bcl-2 and Smac. Method: Thirty female SD mice with normal estrous cycle
+  were selected and randomLy divided into three groups of 10 mice each. Group A (blank
+  control group); Group B (tripterygium glycoside group); Group C (tripterygium glycoside
+  + triptorelin group). For all three groups, the drug was stopped for 3 weeks and
+  all mice were then sacrificed. Ovaries were taken to detect the expression of Bcl-2
+  and Smac in ovarian tissue. Results: Compared with the blank control group, the
+  expression of Bcl-2 in the tripterygium polyglycoside group was reduced and the
+  expression of Smac was enhanced, while for the triptorelin group, increased expression
+  of Bcl-2 and decreased expression of Smac were observed with a statistical significance
+  (P < 0.05). Conclusions: Tripterygium polyglycoside can cause damage to ovarian
+  function in female mice; Triptorelin has a protective effect on tripterygium polyglycoside-induced
+  damage to ovarian function in female mice.'
+---

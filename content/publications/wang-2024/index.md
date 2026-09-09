@@ -1,0 +1,17 @@
+---
+title: Keypoints-based Heterogeneous Graph Convolutional Networks for construction
+authors:
+- Shuozhi Wang
+- Lichao Yang
+- Zichao Zhang
+- Yifan Zhao
+date: '2024-03-01'
+publishDate: '2026-09-09T13:08:38.845771Z'
+publication_types:
+- article-journal
+publication: '*Expert Systems with Applications*'
+doi: 10.1016/j.eswa.2023.121525
+links:
+- name: URL
+  url: http://dx.doi.org/10.1016/j.eswa.2023.121525
+---
