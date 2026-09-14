@@ -48,7 +48,7 @@ sections:
         text: 我们欢迎对科研充满热情、勇于探索的伙伴加入实验室，一同开展创新研究，解决具有挑战性的科学与工程问题。
         button:
           text: 查看招募岗位
-          url: /join
+          url: join/
       show_form: false
     design:
       # css_class: "bg-gray-50 dark:bg-gray-900"

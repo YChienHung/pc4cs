@@ -27,13 +27,10 @@ zh:
      - name: 团队成员
        url: people/
        weight: 30
-     - name: 出版物
+     - name: 论文成果
        url: publications/
        weight: 40
-     - name: 项目
-       url: projects/
-       weight: 45
-     - name: 新闻
+     - name: 新闻动态
        url: news/
        weight: 50
      - name: 加入我们

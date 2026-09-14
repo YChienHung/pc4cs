@@ -1,35 +1,56 @@
-{{/* 单文件轮播。复用 HugoBlox 图片解析器，无 JSX、额外资源挂载或外部脚本。 */}}
+
 {{ $page := .wcPage }}
 {{ $content := .wcBlock.content | default dict }}
 {{ $design := .wcBlock.design | default dict }}
 
-{{ if not (reflect.IsMap $content) }}{{ $content = dict }}{{ end }}
-{{ if not (reflect.IsMap $design) }}{{ $design = dict }}{{ end }}
+{{ if not (reflect.IsMap $content) }}
+  {{ $content = dict }}
+{{ end }}
 
-{{ $gallery := partial "functions/resolve_gallery_items.html" (dict "content" $content "Page" $page) }}
+{{ if not (reflect.IsMap $design) }}
+  {{ $design = dict }}
+{{ end }}
+
+{{ $gallery := partial "functions/resolve_gallery_items.html" (dict
+  "content" $content
+  "Page" $page
+) }}
+
 {{ $items := $gallery.items | default (slice) }}
 
-{{ $fade := partial "functions/coerce_bool" (dict "value" $design.edge_fade "default" true) }}
-{{ $autoplay := partial "functions/coerce_bool" (dict "value" $design.autoplay "default" false) }}
-{{ $interval := partial "functions/coerce_int" (dict "value" $design.autoplay_interval "default" 5000 "min" 1000) }}
-{{ $edge := partial "functions/coerce_int" (dict "value" $design.edge_fade_width "default" 10 "min" 0 "max" 30) }}
+
+{{/* =========================================================
+   Configuration
+   ========================================================= */}}
+
+{{ $fade := partial "functions/coerce_bool" (dict
+  "value" $design.edge_fade
+  "default" true
+) }}
+
+{{ $autoplay := partial "functions/coerce_bool" (dict
+  "value" $design.autoplay
+  "default" false
+) }}
+
+{{ $interval := partial "functions/coerce_int" (dict
+  "value" $design.autoplay_interval
+  "default" 5000
+  "min" 1000
+) }}
 
 {{ $captionPosition := $design.caption_position | default "below" }}
+
 {{ if not (in (slice "below" "overlay" "hover" "none") $captionPosition) }}
   {{ $captionPosition = "below" }}
 {{ end }}
 
-{{/* 指示点位置独立于标题位置，默认在图片下方。 */}}
 {{ $indicatorPosition := $design.indicator_position | default "below" }}
+
 {{ if not (in (slice "below" "overlay" "hover" "none") $indicatorPosition) }}
   {{ $indicatorPosition = "below" }}
 {{ end }}
 
-{{ $rowHeight := partial "functions/coerce_int" (dict "value" $design.row_height "default" 0 "min" 0) }}
-
-{{ $ratio := "16 / 9" }}
-{{ if eq $design.aspect_ratio "landscape" }}{{ $ratio = "4 / 3" }}{{ end }}
-{{ if eq $design.aspect_ratio "square" }}{{ $ratio = "1 / 1" }}{{ end }}
 
 {{ if gt (len $items) 0 }}
 
@@ -40,32 +61,50 @@
   data-interval="{{ $interval }}"
   aria-roledescription="carousel"
   aria-label="{{ $content.title | default "Gallery" | plainify }}"
-  style="--gw-ratio:{{ $ratio | safeCSS }};--gw-edge:{{ printf "%d%%" $edge | safeCSS }};"
 >
 
-  {{ if or $content.title $content.subtitle }}
-  <header class="text-center max-w-3xl mx-auto mb-6 px-4">
-    {{ with $content.title }}
-    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-      {{ $page.RenderString . }}
-    </h2>
-    {{ end }}
 
-    {{ with $content.subtitle }}
-    <div class="text-lg text-gray-600 dark:text-gray-400">
-      {{ $page.RenderString . }}
-    </div>
-    {{ end }}
-  </header>
+  {{/* =======================================================
+     Header
+     ======================================================= */}}
+
+  {{ if or $content.title $content.subtitle }}
+
+    <header class="text-center max-w-3xl mx-auto mb-6 px-4">
+
+      {{ with $content.title }}
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+          {{ $page.RenderString . }}
+        </h2>
+      {{ end }}
+
+      {{ with $content.subtitle }}
+        <div class="text-lg text-gray-600 dark:text-gray-400">
+          {{ $page.RenderString . }}
+        </div>
+      {{ end }}
+
+    </header>
+
   {{ end }}
 
-  {{/* 无脚本时显示第一张图片；控件初始化后才显示。 */}}
+
+  {{/* =======================================================
+     Carousel Stage
+     ======================================================= */}}
+
   <div
-    class="gw-stage {{ if eq $captionPosition "hover" }}gw-caption-hover{{ end }} {{ if in (slice "overlay" "hover") $indicatorPosition }}gw-has-overlay-indicators{{ end }}"
-    {{ if gt $rowHeight 0 }}
-    style="height:{{ printf "%dpx" $rowHeight | safeCSS }};aspect-ratio:auto;"
-    {{ end }}
+    class="
+      gw-stage
+      {{ if eq $captionPosition "hover" }}gw-caption-hover{{ end }}
+      {{ if in (slice "overlay" "hover") $indicatorPosition }}gw-has-overlay-indicators{{ end }}
+    "
   >
+
+
+    {{/* =====================================================
+       Slides
+       ===================================================== */}}
 
     {{ range $i, $item := $items }}
 
@@ -73,20 +112,30 @@
       {{ $external := false }}
 
       {{ with $item.link }}
+
         {{ $raw := strings.TrimSpace . }}
         {{ $scheme := lower (urls.Parse $raw).Scheme }}
 
-        {{ if or (in (slice "http" "https") $scheme) (hasPrefix $raw "//") }}
+        {{ if or
+          (in (slice "http" "https") $scheme)
+          (hasPrefix $raw "//")
+        }}
+
           {{ $url = $raw }}
           {{ $external = true }}
+
         {{ else if eq $scheme "" }}
+
           {{ if hasPrefix $raw "#" }}
             {{ $url = $raw }}
           {{ else }}
             {{ $url = $raw | relLangURL }}
           {{ end }}
+
         {{ end }}
+
       {{ end }}
+
 
       <div
         class="gw-slide"
@@ -100,184 +149,290 @@
 
         <div class="gw-media {{ if $fade }}gw-fade{{ end }}">
 
-          {{ if $url }}
-          <a
-            href="{{ $url }}"
-            {{ if $external }}
-            target="_blank"
-            rel="noopener noreferrer"
-            {{ end }}
-          >
-          {{ end }}
+
+          {{/* ===============================================
+             Background Image
+             =============================================== */}}
 
           <img
+            class="gw-bg-image"
             src="{{ $item.src }}"
-            {{ with $item.srcset }}srcset="{{ . }}"{{ end }}
-            sizes="100vw"
-            width="{{ $item.width }}"
-            height="{{ $item.height }}"
-            alt="{{ $item.alt }}"
+            alt=""
+            aria-hidden="true"
             loading="{{ if eq $i 0 }}eager{{ else }}lazy{{ end }}"
             decoding="async"
           >
 
-          {{ if $url }}
-          </a>
-          {{ end }}
+
+          {{/* ===============================================
+             Edge Gradient
+             =============================================== */}}
+
+          <div
+            class="gw-edge-gradient"
+            aria-hidden="true"
+          ></div>
+
+
+          {{/* ===============================================
+             Main Image
+             =============================================== */}}
+
+          <div class="gw-main-image">
+
+            <div class="gw-image-frame">
+
+              {{ if $url }}
+
+                <a
+                  href="{{ $url }}"
+                  {{ if $external }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  {{ end }}
+                >
+
+              {{ end }}
+
+
+              <img
+                class="gw-image"
+                src="{{ $item.src }}"
+                {{ with $item.srcset }}
+                  srcset="{{ . }}"
+                {{ end }}
+                sizes="80vw"
+                width="{{ $item.width }}"
+                height="{{ $item.height }}"
+                alt="{{ $item.alt }}"
+                loading="{{ if eq $i 0 }}eager{{ else }}lazy{{ end }}"
+                decoding="async"
+              >
+
+
+              {{ if $url }}
+                </a>
+              {{ end }}
+
+            </div>
+
+          </div>
 
         </div>
+
+
+        {{/* ===============================================
+           Overlay Caption
+           =============================================== */}}
 
         {{ if in (slice "overlay" "hover") $captionPosition }}
-        <div class="gw-overlay">
-          {{ with $item.title }}
-          <div class="font-semibold">
-            {{ . | safeHTML }}
-          </div>
-          {{ end }}
 
-          {{ with $item.caption }}
-          <div>
-            {{ . | safeHTML }}
-          </div>
-          {{ end }}
+          <div class="gw-overlay">
 
-          {{ with $item.credit }}
-          <div class="text-xs mt-1">
-            {{ . | safeHTML }}
+            {{ with $item.title }}
+              <div class="font-semibold">
+                {{ . | safeHTML }}
+              </div>
+            {{ end }}
+
+            {{ with $item.caption }}
+              <div>
+                {{ . | safeHTML }}
+              </div>
+            {{ end }}
+
+            {{ with $item.credit }}
+              <div class="text-xs mt-1">
+                {{ . | safeHTML }}
+              </div>
+            {{ end }}
+
           </div>
-          {{ end }}
-        </div>
+
         {{ end }}
 
       </div>
 
     {{ end }}
+
+
+    {{/* =====================================================
+       Previous / Next Buttons
+       ===================================================== */}}
 
     {{ if gt (len $items) 1 }}
 
-    <button
-      class="gw-arrow gw-prev"
-      data-gw-prev
-      type="button"
-      hidden
-      aria-label="{{ i18n "previous" | default "Previous" }}"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
+      <button
+        class="gw-arrow gw-prev"
+        data-gw-prev
+        type="button"
+        hidden
+        aria-label="{{ i18n "previous" | default "Previous" }}"
       >
-        <path
-          d="m14 6-6 6 6 6"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    </button>
 
-    <button
-      class="gw-arrow gw-next"
-      data-gw-next
-      type="button"
-      hidden
-      aria-label="{{ i18n "next" | default "Next" }}"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            d="m14 6-6 6 6 6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+
+      </button>
+
+
+      <button
+        class="gw-arrow gw-next"
+        data-gw-next
+        type="button"
+        hidden
+        aria-label="{{ i18n "next" | default "Next" }}"
       >
-        <path
-          d="m10 6 6 6-6 6"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    </button>
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            d="m10 6 6 6-6 6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+
+      </button>
 
     {{ end }}
 
+
+    {{/* =====================================================
+       Overlay / Hover Indicator
+       ===================================================== */}}
+
     {{ if in (slice "overlay" "hover") $indicatorPosition }}
+
       {{ if gt (len $items) 1 }}
 
-      <div
-        class="gw-controls gw-indicators-{{ $indicatorPosition }}"
-        data-gw-controls
-        hidden
-      >
-        {{ range $i, $_ := $items }}
-        <button
-          class="gw-dot"
-          data-gw-dot
-          type="button"
-          aria-label="{{ add $i 1 }} / {{ len $items }}"
-          aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
-        ></button>
-        {{ end }}
-      </div>
+        <div
+          class="gw-controls gw-indicators-{{ $indicatorPosition }}"
+          data-gw-controls
+          hidden
+        >
+
+          {{ range $i, $_ := $items }}
+
+            <button
+              class="gw-dot"
+              data-gw-dot
+              type="button"
+              aria-label="{{ add $i 1 }} / {{ len $items }}"
+              aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+            ></button>
+
+          {{ end }}
+
+        </div>
 
       {{ end }}
+
     {{ end }}
 
   </div>
 
-  {{ if in (slice "below" "none") $indicatorPosition }}
-    {{ if gt (len $items) 1 }}
 
-    <div
-      class="gw-controls gw-indicators-{{ $indicatorPosition }}"
-      data-gw-controls
-      hidden
-    >
-      {{ range $i, $_ := $items }}
-      <button
-        class="gw-dot"
-        data-gw-dot
-        type="button"
-        aria-label="{{ add $i 1 }} / {{ len $items }}"
-        aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
-      ></button>
+  {{/* =======================================================
+     Below Area
+
+     Indicator + Caption are grouped together so their vertical
+     position can be adjusted relative to the carousel.
+     ======================================================= */}}
+
+  <div class="gw-below">
+
+
+    {{/* =====================================================
+       Below Indicator
+       ===================================================== */}}
+
+    {{ if in (slice "below" "none") $indicatorPosition }}
+
+      {{ if gt (len $items) 1 }}
+
+        <div
+          class="gw-controls gw-indicators-{{ $indicatorPosition }}"
+          data-gw-controls
+          hidden
+        >
+
+          {{ range $i, $_ := $items }}
+
+            <button
+              class="gw-dot"
+              data-gw-dot
+              type="button"
+              aria-label="{{ add $i 1 }} / {{ len $items }}"
+              aria-current="{{ if eq $i 0 }}true{{ else }}false{{ end }}"
+            ></button>
+
+          {{ end }}
+
+        </div>
+
       {{ end }}
-    </div>
 
     {{ end }}
-  {{ end }}
 
-  <div
-    class="gw-captions"
-    aria-live="off"
-    {{ if ne $captionPosition "below" }}hidden{{ end }}
-  >
-    {{ range $i, $item := $items }}
+
+    {{/* =====================================================
+       Caption Below
+       ===================================================== */}}
 
     <div
-      data-gw-caption
-      {{ if gt $i 0 }}hidden{{ end }}
+      class="gw-captions"
+      aria-live="off"
+      {{ if ne $captionPosition "below" }}hidden{{ end }}
     >
-      {{ with $item.title }}
-      <div class="font-semibold text-gray-900 dark:text-white">
-        {{ . | safeHTML }}
-      </div>
+
+      {{ range $i, $item := $items }}
+
+        <div
+          data-gw-caption
+          {{ if gt $i 0 }}hidden{{ end }}
+        >
+
+          {{ with $item.title }}
+            <div class="font-semibold text-gray-900 dark:text-white">
+              {{ . | safeHTML }}
+            </div>
+          {{ end }}
+
+          {{ with $item.caption }}
+            <div>
+              {{ . | safeHTML }}
+            </div>
+          {{ end }}
+
+          {{ with $item.credit }}
+            <div class="text-xs mt-1">
+              {{ . | safeHTML }}
+            </div>
+          {{ end }}
+
+        </div>
+
       {{ end }}
 
-      {{ with $item.caption }}
-      <div>
-        {{ . | safeHTML }}
-      </div>
-      {{ end }}
-
-      {{ with $item.credit }}
-      <div class="text-xs mt-1">
-        {{ . | safeHTML }}
-      </div>
-      {{ end }}
     </div>
 
-    {{ end }}
   </div>
 
 </section>
@@ -286,26 +441,156 @@
 <style>
 
 /* =========================================================
-   基础布局
+   User Configuration
    ========================================================= */
 
 .gw-block {
+
+  /* -------------------------------------------------------
+     Main image shadow
+
+     Change this value if you want a larger / smaller shadow.
+
+     Current:
+       20px
+     ------------------------------------------------------- */
+
+  --gw-shadow-size: 20px;
+
+  --gw-shadow-color:
+    rgba(0, 0, 0, 0.75);
+
+
+  /* -------------------------------------------------------
+     Previous / Next responsive size
+
+     clamp(
+       minimum,
+       responsive size,
+       maximum
+     )
+     ------------------------------------------------------- */
+
+  --gw-arrow-size:
+    clamp(44px, 4.2vw, 78px);
+
+  --gw-arrow-icon-size:
+    clamp(24px, 2.2vw, 40px);
+
+
+  /* -------------------------------------------------------
+     Previous / Next distance from viewport edge
+     ------------------------------------------------------- */
+
+  --gw-arrow-edge:
+    clamp(6px, 0.8vw, 18px);
+
+
+  /* -------------------------------------------------------
+     Below Indicator + Caption position
+
+     Current:
+       2.8125%
+
+     For a 16:9 carousel:
+       2.8125% of width
+       ≈ 5% of carousel height.
+
+     Increase to move Indicator + Caption farther upward.
+
+     Examples:
+
+       ~5% upward:
+       2.8125%
+
+       ~10% upward:
+       5.625%
+
+       ~15% upward:
+       8.4375%
+     ------------------------------------------------------- */
+
+  --gw-below-up: 2.8125%;
+
+
+  /* -------------------------------------------------------
+     Light Theme - Arrow
+     ------------------------------------------------------- */
+
+  --gw-arrow-bg:
+    rgba(255, 255, 255, 0.30);
+
+  --gw-arrow-bg-hover:
+    rgba(255, 255, 255, 0.48);
+
+  --gw-arrow-color:
+    rgba(15, 23, 42, 0.92);
+
+  --gw-arrow-border:
+    rgba(255, 255, 255, 0.38);
+
+  --gw-arrow-shadow:
+    rgba(15, 23, 42, 0.20);
+
+
   width: 100%;
   max-width: none;
+
   margin-inline: auto;
 }
+
 
 .gw-block [hidden] {
   display: none !important;
 }
 
+
+/* =========================================================
+   Dark Theme
+   ========================================================= */
+
+.dark .gw-block {
+
+  --gw-arrow-bg:
+    rgba(15, 23, 42, 0.28);
+
+  --gw-arrow-bg-hover:
+    rgba(30, 41, 59, 0.48);
+
+  --gw-arrow-color:
+    rgba(248, 250, 252, 0.96);
+
+  --gw-arrow-border:
+    rgba(255, 255, 255, 0.18);
+
+  --gw-arrow-shadow:
+    rgba(0, 0, 0, 0.38);
+}
+
+
+/* =========================================================
+   Stage
+   ========================================================= */
+
 .gw-stage {
   position: relative;
+
   width: 100%;
 
-  aspect-ratio: var(--gw-ratio, 16 / 9);
+  /*
+   * Automatic height:
+   *
+   * 1920 -> 1080
+   * 1600 -> 900
+   * 1440 -> 810
+   * 1280 -> 720
+   */
+
+  aspect-ratio: 16 / 9;
 
   overflow: hidden;
+
+  background: #000;
 
   border-radius: 0;
 }
@@ -315,77 +600,291 @@
    Slide
    ========================================================= */
 
-.gw-slide,
-.gw-media,
-.gw-media > a {
+.gw-slide {
   position: absolute;
+
   inset: 0;
 
-  display: block;
-}
-
-.gw-slide {
   overflow: hidden;
 
-  /*
-   * 左右滑动动画主要使用 transform。
-   */
   will-change: transform;
 
-  /*
-   * GPU 合成时降低闪烁概率。
-   */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-.gw-media img {
-  display: block;
 
-  width: 100%;
-  height: 100%;
+/* =========================================================
+   Media
+   ========================================================= */
+
+.gw-media {
+  position: absolute;
+
+  inset: 0;
+
+  overflow: hidden;
+
+  background: #000;
+}
+
+
+/* =========================================================
+   Background Image
+   ========================================================= */
+
+.gw-bg-image {
+  position: absolute;
+
+  inset: -4%;
+
+  width: 108%;
+  height: 108%;
 
   object-fit: cover;
+  object-position: center;
 
-  border-radius: 0;
+  filter:
+    blur(24px)
+    brightness(0.32)
+    saturate(0.85);
+
+  transform: scale(1.04);
+
+  pointer-events: none;
 
   user-select: none;
-
   -webkit-user-drag: none;
 }
 
 
 /* =========================================================
-   保留原始图片边缘渐隐方案
+   Outer Edge Gradient
    ========================================================= */
 
-.gw-fade {
-  background: #000;
+.gw-edge-gradient {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to right,
+
+      rgba(0, 0, 0, 1.00) 0%,
+      rgba(0, 0, 0, 0.92) 3%,
+      rgba(0, 0, 0, 0.70) 7%,
+      rgba(0, 0, 0, 0.40) 12%,
+      rgba(0, 0, 0, 0.15) 18%,
+
+      rgba(0, 0, 0, 0.00) 25%,
+      rgba(0, 0, 0, 0.00) 75%,
+
+      rgba(0, 0, 0, 0.15) 82%,
+      rgba(0, 0, 0, 0.40) 88%,
+      rgba(0, 0, 0, 0.70) 93%,
+      rgba(0, 0, 0, 0.92) 97%,
+      rgba(0, 0, 0, 1.00) 100%
+    );
 }
 
-.gw-fade img {
-  -webkit-mask-image:
+
+.gw-media:not(.gw-fade) .gw-edge-gradient {
+  display: none;
+}
+
+
+/* =========================================================
+   Main Image Area
+   ========================================================= */
+
+.gw-main-image {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 3;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+
+  /*
+   * Main image margin.
+   *
+   * Modify:
+   *
+   * --gw-image-space-y
+   * --gw-image-space-x
+   */
+
+  padding:
+    var(--gw-image-space-y)
+    var(--gw-image-space-x);
+}
+
+
+/* =========================================================
+   Image Frame
+   ========================================================= */
+
+.gw-image-frame {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+
+/* =========================================================
+   Main Image Shadow - Layer 1
+   ========================================================= */
+
+.gw-image-frame::before {
+  content: "";
+
+  position: absolute;
+
+  /*
+   * Shadow width is controlled by:
+   *
+   * --gw-shadow-size: 20px;
+   */
+
+  inset:
+    calc(-1 * var(--gw-shadow-size));
+
+  z-index: -1;
+
+  pointer-events: none;
+
+  background:
+    var(--gw-shadow-color);
+
+  filter:
+    blur(var(--gw-shadow-size));
+
+  opacity: 0.95;
+}
+
+
+/* =========================================================
+   Main Image Shadow - Layer 2
+   ========================================================= */
+
+.gw-image-frame::after {
+  content: "";
+
+  position: absolute;
+
+  inset:
+    calc(-1 * var(--gw-shadow-size));
+
+  z-index: -1;
+
+  pointer-events: none;
+
+  background:
     linear-gradient(
       to right,
-      transparent,
-      #000 var(--gw-edge, 10%),
-      #000 calc(100% - var(--gw-edge, 10%)),
-      transparent
+
+      transparent 0,
+
+      rgba(0, 0, 0, 0.65)
+        var(--gw-shadow-size),
+
+      rgba(0, 0, 0, 0.65)
+        calc(100% - var(--gw-shadow-size)),
+
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+
+      transparent 0,
+
+      rgba(0, 0, 0, 0.65)
+        var(--gw-shadow-size),
+
+      rgba(0, 0, 0, 0.65)
+        calc(100% - var(--gw-shadow-size)),
+
+      transparent 100%
     );
 
-  mask-image:
-    linear-gradient(
-      to right,
-      transparent,
-      #000 var(--gw-edge, 10%),
-      #000 calc(100% - var(--gw-edge, 10%)),
-      transparent
+  filter:
+    blur(
+      calc(var(--gw-shadow-size) / 2)
     );
 }
 
 
 /* =========================================================
-   左右箭头
+   Main Image Link
+   ========================================================= */
+
+.gw-image-frame > a {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+
+/* =========================================================
+   Main Image
+   ========================================================= */
+
+.gw-image {
+  position: relative;
+
+  z-index: 1;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 100%;
+  max-height: 100%;
+
+  /*
+   * Complete image.
+   * No cropping.
+   */
+
+  object-fit: contain;
+  object-position: center center;
+
+  border-radius: 0;
+
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+
+/* =========================================================
+   Previous / Next Button
    ========================================================= */
 
 .gw-block .gw-arrow {
@@ -393,74 +892,153 @@
 
   top: 50%;
 
-  transform: translateY(-50%);
+  transform:
+    translateY(-50%);
 
-  z-index: 2;
+  z-index: 10;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
 
-  width: 52px;
-  height: 52px;
 
-  min-width: 52px;
-  min-height: 52px;
+  /*
+   * Responsive button size.
+   */
+
+  width:
+    var(--gw-arrow-size);
+
+  height:
+    var(--gw-arrow-size);
+
+  min-width:
+    var(--gw-arrow-size);
+
+  min-height:
+    var(--gw-arrow-size);
+
 
   margin: 0;
   padding: 0;
 
-  border: 0;
+
+  /*
+   * Theme-aware border.
+   */
+
+  border:
+    1px solid
+    var(--gw-arrow-border);
+
+
   border-radius: 50%;
 
-  background: rgb(255 255 255 / 0.92);
 
-  color: #111827;
+  /*
+   * Theme-aware background.
+   */
+
+  background:
+    var(--gw-arrow-bg);
+
+
+  color:
+    var(--gw-arrow-color);
+
+
+  /*
+   * Glass effect.
+   */
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+
+
+  box-shadow:
+    0 4px 20px
+    var(--gw-arrow-shadow);
+
 
   line-height: 1;
 
-  box-shadow: 0 2px 8px #0003;
-
   cursor: pointer;
 
+
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    color 0.25s ease;
 }
+
+
+/* =========================================================
+   Arrow Hover
+   ========================================================= */
 
 .gw-block .gw-arrow:hover {
   transform:
     translateY(-50%)
-    scale(1.06);
+    scale(1.08);
 
-  box-shadow: 0 4px 14px #0004;
+  background:
+    var(--gw-arrow-bg-hover);
+
+  box-shadow:
+    0 6px 28px
+    var(--gw-arrow-shadow);
 }
+
+
+/* =========================================================
+   Arrow Active
+   ========================================================= */
 
 .gw-block .gw-arrow:active {
   transform:
     translateY(-50%)
-    scale(0.96);
+    scale(0.94);
 }
+
+
+/* =========================================================
+   Arrow Icon
+   ========================================================= */
 
 .gw-block .gw-arrow svg {
   display: block;
 
   flex: none;
 
-  width: 28px;
-  height: 28px;
+  width:
+    var(--gw-arrow-icon-size);
+
+  height:
+    var(--gw-arrow-icon-size);
 
   margin: 0;
 }
 
+
+/* =========================================================
+   Arrow Position
+   ========================================================= */
+
 .gw-prev {
-  left: clamp(20px, 6%, 96px);
+  left:
+    var(--gw-arrow-edge);
 }
 
+
 .gw-next {
-  right: clamp(20px, 6%, 96px);
+  right:
+    var(--gw-arrow-edge);
 }
 
 
@@ -471,9 +1049,15 @@
 .gw-overlay {
   position: absolute;
 
-  inset: auto 0 0;
+  inset:
+    auto 0 0;
 
-  padding: 40px 72px 20px;
+  z-index: 5;
+
+  padding:
+    40px
+    72px
+    20px;
 
   text-align: center;
 
@@ -482,7 +1066,7 @@
   background:
     linear-gradient(
       transparent,
-      rgba(0, 0, 0, 0.7)
+      rgba(0, 0, 0, 0.70)
     );
 
   pointer-events: none;
@@ -490,30 +1074,20 @@
   font-size: 16px;
 }
 
+
 .gw-caption-hover .gw-overlay {
   opacity: 0;
 
-  transition: opacity 0.2s;
+  transition:
+    opacity 0.2s ease;
 }
+
 
 .gw-caption-hover:hover .gw-overlay,
 .gw-caption-hover:focus-within .gw-overlay {
   opacity: 1;
 }
 
-@media (hover: none) {
-  .gw-caption-hover .gw-overlay {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 640px) {
-  .gw-overlay {
-    padding: 24px 16px 12px;
-
-    font-size: 14px;
-  }
-}
 
 .gw-has-overlay-indicators .gw-overlay {
   padding-bottom: 56px;
@@ -521,15 +1095,62 @@
 
 
 /* =========================================================
-   图片下方 Caption
+   Below Area
+   ========================================================= */
+
+.gw-below {
+  position: relative;
+
+  z-index: 12;
+
+
+  /*
+   * =======================================================
+   * IMPORTANT:
+   *
+   * This is the actual position control for:
+   *
+   * - Below Indicator
+   * - Caption Below
+   *
+   * Current:
+   *   move upward by approximately 5%
+   *   of the 16:9 carousel height.
+   *
+   * Modify:
+   *
+   * --gw-below-up: 2.8125%;
+   *
+   * Examples:
+   *
+   * 5%:
+   *   2.8125%
+   *
+   * 10%:
+   *   5.625%
+   *
+   * 15%:
+   *   8.4375%
+   * =======================================================
+   */
+
+  margin-top:
+    calc(-1 * var(--gw-below-up));
+}
+
+
+/* =========================================================
+   Caption Below
    ========================================================= */
 
 .gw-captions {
   max-width: 48rem;
 
-  margin: 12px auto 0;
+  margin:
+    4px auto 0;
 
-  padding-inline: 16px;
+  padding-inline:
+    16px;
 
   text-align: center;
 
@@ -539,8 +1160,13 @@
 }
 
 
+.dark .gw-captions {
+  color: #cbd5e1;
+}
+
+
 /* =========================================================
-   指示点
+   Indicator Container
    ========================================================= */
 
 .gw-block .gw-controls {
@@ -555,10 +1181,16 @@
 
   width: 100%;
 
-  margin: 10px auto 0;
+  margin:
+    6px auto 0;
 
   padding: 0;
 }
+
+
+/* =========================================================
+   Indicator Dot
+   ========================================================= */
 
 .gw-block .gw-dot {
   display: flex;
@@ -566,7 +1198,8 @@
   align-items: center;
   justify-content: center;
 
-  flex: 0 0 32px;
+  flex:
+    0 0 32px;
 
   box-sizing: border-box;
 
@@ -580,6 +1213,7 @@
   padding: 0;
 
   border: 0;
+
   border-radius: 50%;
 
   background: transparent;
@@ -593,6 +1227,7 @@
   line-height: 1;
 }
 
+
 .gw-block .gw-dot::before {
   display: block;
 
@@ -603,28 +1238,130 @@
 
   border-radius: 50%;
 
-  background: #94a3b8;
+  background:
+    #94a3b8;
 
   transition:
-    background 0.2s,
-    width 0.2s,
-    border-radius 0.2s,
-    transform 0.2s;
+    background 0.2s ease,
+    width 0.2s ease,
+    border-radius 0.2s ease,
+    transform 0.2s ease;
 }
+
 
 .gw-block .gw-dot:hover::before {
-  transform: scale(1.15);
+  transform:
+    scale(1.15);
 }
 
-.gw-block .gw-dot[aria-current="true"]::before {
+
+.gw-block
+.gw-dot[aria-current="true"]::before {
   width: 24px;
   height: 10px;
 
   border-radius: 4px;
 
-  background: #475569;
+  background:
+    #475569;
 
   transform: none;
+}
+
+
+.dark
+.gw-block
+.gw-dot::before {
+  background:
+    #64748b;
+}
+
+
+.dark
+.gw-block
+.gw-dot[aria-current="true"]::before {
+  background:
+    #e2e8f0;
+}
+
+
+/* =========================================================
+   Hidden Indicator
+   ========================================================= */
+
+.gw-block
+.gw-controls.gw-indicators-none {
+  display: none !important;
+}
+
+
+/* =========================================================
+   Overlay / Hover Indicator
+   ========================================================= */
+
+.gw-block
+.gw-controls.gw-indicators-overlay,
+
+.gw-block
+.gw-controls.gw-indicators-hover {
+  position: absolute;
+
+  bottom: 10px;
+  left: 0;
+
+  z-index: 10;
+
+  margin: 0;
+}
+
+
+.gw-block
+.gw-controls.gw-indicators-hover {
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.2s ease;
+}
+
+
+.gw-stage:hover
+.gw-controls.gw-indicators-hover,
+
+.gw-stage:focus-within
+.gw-controls.gw-indicators-hover {
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+
+.gw-block
+.gw-indicators-overlay
+.gw-dot::before,
+
+.gw-block
+.gw-indicators-hover
+.gw-dot::before {
+  background:
+    rgba(255, 255, 255, 0.55);
+
+  box-shadow:
+    0 1px 4px
+    rgba(0, 0, 0, 0.33);
+}
+
+
+.gw-block
+.gw-indicators-overlay
+.gw-dot[aria-current="true"]::before,
+
+.gw-block
+.gw-indicators-hover
+.gw-dot[aria-current="true"]::before {
+  background:
+    #fff;
 }
 
 
@@ -633,85 +1370,105 @@
    ========================================================= */
 
 .gw-block button:focus-visible,
-.gw-media a:focus-visible {
-  outline: 2px solid #6366f1;
+.gw-image-frame a:focus-visible {
+  outline:
+    2px solid
+    currentColor;
 
-  outline-offset: -3px;
+  outline-offset:
+    3px;
 }
 
 
 /* =========================================================
-   Dark Mode
+   Tablet
    ========================================================= */
 
-.dark .gw-arrow {
-  background: #1f2937;
+@media (max-width: 1024px) {
 
-  color: #f9fafb;
-}
+  .gw-edge-gradient {
+    background:
+      linear-gradient(
+        to right,
 
-.dark .gw-captions {
-  color: #cbd5e1;
-}
+        rgba(0, 0, 0, 0.75) 0%,
+        rgba(0, 0, 0, 0.30) 7%,
+        rgba(0, 0, 0, 0.00) 16%,
 
-.dark .gw-dot[aria-current="true"]::before {
-  background: #e2e8f0;
+        rgba(0, 0, 0, 0.00) 84%,
+
+        rgba(0, 0, 0, 0.30) 93%,
+        rgba(0, 0, 0, 0.75) 100%
+      );
+  }
+
 }
 
 
 /* =========================================================
-   指示点位置
+   Mobile
    ========================================================= */
 
-.gw-block .gw-controls.gw-indicators-none {
-  display: none !important;
+@media (max-width: 640px) {
+
+  /*
+   * Reduce image margin on small screens.
+   *
+   * Arrow size does NOT need separate mobile rules because
+   * clamp() already makes it responsive.
+   */
+
+  .gw-block {
+    --gw-image-space-x: 5%;
+    --gw-image-space-y: 2.8125%;
+  }
+
+
+  .gw-overlay {
+    padding:
+      24px
+      16px
+      12px;
+
+    font-size: 14px;
+  }
+
+
+  .gw-edge-gradient {
+    background:
+      linear-gradient(
+        to right,
+
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.00) 10%,
+
+        rgba(0, 0, 0, 0.00) 90%,
+
+        rgba(0, 0, 0, 0.45) 100%
+      );
+  }
+
 }
 
-.gw-block .gw-controls.gw-indicators-overlay,
-.gw-block .gw-controls.gw-indicators-hover {
-  position: absolute;
 
-  bottom: 10px;
-  left: 0;
-
-  z-index: 3;
-
-  margin: 0;
-}
-
-.gw-block .gw-controls.gw-indicators-hover {
-  opacity: 0;
-
-  pointer-events: none;
-
-  transition: opacity 0.2s;
-}
-
-.gw-stage:hover .gw-controls.gw-indicators-hover,
-.gw-stage:focus-within .gw-controls.gw-indicators-hover {
-  opacity: 1;
-
-  pointer-events: auto;
-}
-
-.gw-block .gw-indicators-overlay .gw-dot::before,
-.gw-block .gw-indicators-hover .gw-dot::before {
-  background: rgb(255 255 255 / 0.55);
-
-  box-shadow: 0 1px 4px #0005;
-}
-
-.gw-block .gw-indicators-overlay .gw-dot[aria-current="true"]::before,
-.gw-block .gw-indicators-hover .gw-dot[aria-current="true"]::before {
-  background: #fff;
-}
+/* =========================================================
+   Touch Devices
+   ========================================================= */
 
 @media (hover: none) {
-  .gw-block .gw-controls.gw-indicators-hover {
+
+  .gw-caption-hover .gw-overlay {
+    opacity: 1;
+  }
+
+
+  .gw-block
+  .gw-controls.gw-indicators-hover {
     opacity: 1;
 
     pointer-events: auto;
   }
+
 }
 
 
@@ -720,18 +1477,25 @@
    ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+
   .gw-block .gw-dot::before,
-  .gw-block .gw-controls.gw-indicators-hover,
+
+  .gw-block
+  .gw-controls.gw-indicators-hover,
+
   .gw-caption-hover .gw-overlay,
+
   .gw-block .gw-arrow {
     transition: none;
   }
+
 }
 
 </style>
 
 
 <script>
+
 (() => {
 
   function init() {
@@ -741,8 +1505,9 @@
       .forEach(root => {
 
         /*
-         * 防止重复初始化。
+         * Prevent duplicate initialization.
          */
+
         if (root.dataset.ready) {
           return;
         }
@@ -764,16 +1529,18 @@
 
 
         /*
-         * 只有一张图片时无需初始化轮播。
+         * A single image does not require carousel logic.
          */
+
         if (slides.length < 2) {
           return;
         }
 
 
-        const reduced = window.matchMedia(
-          '(prefers-reduced-motion: reduce)'
-        );
+        const reduced =
+          window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+          );
 
 
         let index = 0;
@@ -784,19 +1551,11 @@
 
         let focus = false;
 
-        let manualPause = reduced.matches;
+        let manualPause =
+          reduced.matches;
 
-
-        /*
-         * 当前正在运行的 Web Animation。
-         */
         let animations = [];
 
-
-        /*
-         * 防止快速连续切换时旧动画 onfinish
-         * 覆盖新的 slide 状态。
-         */
         let revision = 0;
 
 
@@ -804,17 +1563,16 @@
           root.dataset.autoplay === 'true';
 
 
-        const delay = Math.max(
-          1000,
-          Number(root.dataset.interval) || 5000
-        );
+        const delay =
+          Math.max(
+            1000,
+            Number(root.dataset.interval) || 5000
+          );
 
 
-        /*
-         * =================================================
-         * 自动播放
-         * =================================================
-         */
+        /* =================================================
+           Autoplay
+           ================================================= */
 
         function schedule() {
 
@@ -832,32 +1590,22 @@
             root.isConnected
           ) {
 
-            timer = setTimeout(
-              () => {
-
-                /*
-                 * 自动播放始终向右进入下一张，
-                 * 即视觉上整体向左滑动。
-                 */
-                show(
-                  index + 1,
-                  1
-                );
-
-              },
-              delay
-            );
+            timer =
+              setTimeout(
+                () => {
+                  show(index + 1, 1);
+                },
+                delay
+              );
 
           }
 
         }
 
 
-        /*
-         * =================================================
-         * 取消当前动画
-         * =================================================
-         */
+        /* =================================================
+           Cancel Animations
+           ================================================= */
 
         function cancelAnimations() {
 
@@ -867,21 +1615,20 @@
 
             try {
               animation.cancel();
-            } catch (_) {}
+            } catch (_) {
+              // Ignore.
+            }
 
           });
-
 
           animations = [];
 
         }
 
 
-        /*
-         * =================================================
-         * 清理 slide
-         * =================================================
-         */
+        /* =================================================
+           Cleanup
+           ================================================= */
 
         function cleanupSlides(activeIndex) {
 
@@ -893,7 +1640,6 @@
 
             slide.hidden =
               !active;
-
 
             slide.inert =
               !active;
@@ -914,38 +1660,15 @@
         }
 
 
-        /*
-         * =================================================
-         * 切换 Slide
-         * =================================================
-         *
-         * direction:
-         *
-         *  1  = Next
-         *
-         *       当前图片向左离开
-         *       下一图片从右侧进入
-         *
-         *
-         * -1  = Previous
-         *
-         *       当前图片向右离开
-         *       上一图片从左侧进入
-         *
-         *
-         * null = indicator 点击时自动判断方向
-         *
-         * =================================================
-         */
+        /* =================================================
+           Show Slide
+           ================================================= */
 
         function show(
           next,
           direction = null
         ) {
 
-          /*
-           * 环形索引。
-           */
           next =
             (
               next +
@@ -966,14 +1689,14 @@
           const old =
             index;
 
-
           const token =
             ++revision;
 
 
           /*
-           * indicator 点击时自动计算最短方向。
+           * Determine shortest direction when clicking dots.
            */
+
           if (direction === null) {
 
             const forwardDistance =
@@ -1002,89 +1725,78 @@
           }
 
 
-          /*
-           * 如果用户快速连续点击，
-           * 停止上一轮未完成动画。
-           */
           cancelAnimations();
 
 
           /*
-           * 只保留 old 与 next 两张参与动画。
+           * Keep only current and next slide visible.
            */
-          slides.forEach(
-            (slide, i) => {
 
-              const visible =
-                i === old ||
-                i === next;
+          slides.forEach((slide, i) => {
 
-
-              slide.hidden =
-                !visible;
+            const visible =
+              i === old ||
+              i === next;
 
 
-              slide.inert =
-                i !== next;
+            slide.hidden =
+              !visible;
+
+            slide.inert =
+              i !== next;
 
 
-              slide.setAttribute(
-                'aria-hidden',
-                String(i !== next)
-              );
+            slide.setAttribute(
+              'aria-hidden',
+              String(i !== next)
+            );
 
 
-              slide.style.zIndex =
-                visible
-                  ? '1'
-                  : '0';
+            slide.style.zIndex =
+              visible
+                ? '1'
+                : '0';
 
 
-              slide.style.transform = '';
+            slide.style.transform = '';
 
-            }
-          );
+          });
 
 
           /*
-           * caption 立即切换。
+           * Update captions.
            */
-          captions.forEach(
-            (caption, i) => {
 
-              caption.hidden =
-                i !== next;
+          captions.forEach((caption, i) => {
 
-            }
-          );
+            caption.hidden =
+              i !== next;
+
+          });
 
 
-          /*
-           * 更新当前索引。
-           */
           index =
             next;
 
 
           /*
-           * 更新指示点。
+           * Update dots.
            */
-          dots.forEach(
-            (dot, i) => {
 
-              dot.setAttribute(
-                'aria-current',
-                String(i === index)
-              );
+          dots.forEach((dot, i) => {
 
-            }
-          );
+            dot.setAttribute(
+              'aria-current',
+              String(i === index)
+            );
+
+          });
 
 
           /*
-           * reduced motion：
-           * 直接切换，不播放动画。
+           * Reduced motion.
            */
+
           if (
             reduced.matches ||
             typeof slides[next].animate !== 'function'
@@ -1099,35 +1811,6 @@
           }
 
 
-          /*
-           * =================================================
-           * 左右滑动动画
-           * =================================================
-           *
-           * Next:
-           *
-           * old:
-           *
-           *       0%  -> -100%
-           *
-           * next:
-           *
-           *     100%  -> 0%
-           *
-           *
-           * Previous:
-           *
-           * old:
-           *
-           *       0%  -> 100%
-           *
-           * next:
-           *
-           *    -100%  -> 0%
-           *
-           * =================================================
-           */
-
           const outgoingEnd =
             direction > 0
               ? '-100%'
@@ -1140,13 +1823,7 @@
               : '-100%';
 
 
-          /*
-           * 相比 ease-in-out，
-           * 这个曲线起步较快、停止更柔和，
-           * 用于大图轮播更自然。
-           */
           const animationOptions = {
-
             duration: 600,
 
             easing:
@@ -1154,53 +1831,38 @@
 
             fill:
               'forwards'
-
           };
 
 
-          /*
-           * 当前图片离开。
-           */
           const outgoing =
             slides[old].animate(
-
               [
                 {
                   transform:
                     'translate3d(0, 0, 0)'
                 },
-
                 {
                   transform:
                     `translate3d(${outgoingEnd}, 0, 0)`
                 }
               ],
-
               animationOptions
-
             );
 
 
-          /*
-           * 新图片进入。
-           */
           const incoming =
             slides[next].animate(
-
               [
                 {
                   transform:
                     `translate3d(${incomingStart}, 0, 0)`
                 },
-
                 {
                   transform:
                     'translate3d(0, 0, 0)'
                 }
               ],
-
               animationOptions
-
             );
 
 
@@ -1210,16 +1872,8 @@
           ];
 
 
-          /*
-           * 新图片动画结束后，
-           * 恢复为只有当前 slide 显示。
-           */
           incoming.onfinish = () => {
 
-            /*
-             * 如果期间又发生了 show()，
-             * 当前 finish 已经失效。
-             */
             if (token !== revision) {
               return;
             }
@@ -1227,10 +1881,6 @@
 
             cleanupSlides(index);
 
-
-            /*
-             * 清除 fill: forwards 状态。
-             */
             cancelAnimations();
 
           };
@@ -1241,22 +1891,26 @@
         }
 
 
-        /*
-         * =================================================
-         * 控件初始化
-         * =================================================
-         */
+        /* =================================================
+           Controls
+           ================================================= */
 
         const prev =
-          root.querySelector('[data-gw-prev]');
+          root.querySelector(
+            '[data-gw-prev]'
+          );
 
 
         const next =
-          root.querySelector('[data-gw-next]');
+          root.querySelector(
+            '[data-gw-next]'
+          );
 
 
         const controls = [
-          ...root.querySelectorAll('[data-gw-controls]')
+          ...root.querySelectorAll(
+            '[data-gw-controls]'
+          )
         ];
 
 
@@ -1271,77 +1925,53 @@
 
 
         controls.forEach(control => {
-
           control.hidden = false;
-
         });
 
 
-        /*
-         * =================================================
-         * Previous
-         * =================================================
-         */
+        /* =================================================
+           Previous
+           ================================================= */
 
         prev?.addEventListener(
           'click',
           () => {
-
-            show(
-              index - 1,
-              -1
-            );
-
+            show(index - 1, -1);
           }
         );
 
 
-        /*
-         * =================================================
-         * Next
-         * =================================================
-         */
+        /* =================================================
+           Next
+           ================================================= */
 
         next?.addEventListener(
           'click',
           () => {
-
-            show(
-              index + 1,
-              1
-            );
-
+            show(index + 1, 1);
           }
         );
 
 
-        /*
-         * =================================================
-         * Indicator
-         * =================================================
-         */
+        /* =================================================
+           Indicator
+           ================================================= */
 
-        dots.forEach(
-          (dot, i) => {
+        dots.forEach((dot, i) => {
 
-            dot.addEventListener(
-              'click',
-              () => {
+          dot.addEventListener(
+            'click',
+            () => {
+              show(i);
+            }
+          );
 
-                show(i);
-
-              }
-            );
-
-          }
-        );
+        });
 
 
-        /*
-         * =================================================
-         * Hover 暂停 autoplay
-         * =================================================
-         */
+        /* =================================================
+           Hover Pause
+           ================================================= */
 
         root.addEventListener(
           'mouseenter',
@@ -1367,11 +1997,9 @@
         );
 
 
-        /*
-         * =================================================
-         * Focus 暂停 autoplay
-         * =================================================
-         */
+        /* =================================================
+           Focus Pause
+           ================================================= */
 
         root.addEventListener(
           'focusin',
@@ -1400,11 +2028,9 @@
         );
 
 
-        /*
-         * =================================================
-         * 键盘左右方向键
-         * =================================================
-         */
+        /* =================================================
+           Keyboard
+           ================================================= */
 
         root.addEventListener(
           'keydown',
@@ -1421,9 +2047,7 @@
             event.preventDefault();
 
 
-            if (
-              event.key === 'ArrowRight'
-            ) {
+            if (event.key === 'ArrowRight') {
 
               show(
                 index + 1,
@@ -1443,11 +2067,9 @@
         );
 
 
-        /*
-         * =================================================
-         * 页面切换到后台时暂停 autoplay
-         * =================================================
-         */
+        /* =================================================
+           Visibility
+           ================================================= */
 
         document.addEventListener(
           'visibilitychange',
@@ -1455,11 +2077,9 @@
         );
 
 
-        /*
-         * =================================================
-         * Reduced Motion
-         * =================================================
-         */
+        /* =================================================
+           Reduced Motion
+           ================================================= */
 
         reduced.addEventListener(
           'change',
@@ -1477,6 +2097,7 @@
 
             }
 
+
             schedule();
 
           }
@@ -1484,8 +2105,9 @@
 
 
         /*
-         * 启动 autoplay。
+         * Start autoplay.
          */
+
         schedule();
 
       });
@@ -1512,6 +2134,7 @@
   }
 
 })();
+
 </script>
 
 {{ end }}

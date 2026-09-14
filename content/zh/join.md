@@ -21,7 +21,7 @@ sections:
       layout: "centered"
       size: "compact"
       spacing:
-        padding: ["1rem", "0", "1rem", "0"]
+        padding: ["0", "0", "1rem", "0"]
 
   # 博士研究生
   - block: job-position

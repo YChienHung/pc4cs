@@ -13,7 +13,7 @@ hugoblox:
   # ────────────────────────────────────────────────────────────────────────────
   identity:
     # Site name - shown in navbar, footer, copyright, and browser title by default
-    name: "PC4CS Lab"
+    name: "复杂系统感知与控制实验室"
     # Legal entity for copyright notices (defaults to name if not set)
     # Perception and Control for Complex Systems Laboratory
     organization: ""
@@ -96,6 +96,7 @@ hugoblox:
     theme_toggle: true
     theme_picker: true
     language_switcher: true
+    show_title: false
     # Call-to-action button
     cta:
       enable: false

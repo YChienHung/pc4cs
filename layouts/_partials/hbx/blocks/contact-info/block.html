@@ -30,6 +30,12 @@
   {{ $subtitle = $subtitle_raw | emojify | $page.RenderString }}
 {{ end }}
 
+{{ $text := "" }}
+{{ $text_raw := index $content "text" }}
+{{ if eq (printf "%T" $text_raw) "string" }}
+  {{ $text = $text_raw | emojify | $page.RenderString }}
+{{ end }}
+
 {{ $visit_title := i18n "block_contact_visit_title" | default "Visit Us" }}
 {{ $visit_title_raw := index $content "visit_title" }}
 {{ if eq (printf "%T" $visit_title_raw) "string" }}
@@ -224,19 +230,30 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
   
   {{/* Section Header */}}
-  <div class="text-center mb-12">
+  {{ if or $title $subtitle $text }}
+  <header class="w-full max-w-3xl mx-auto mb-12 text-center"
+          style="width:100%;max-width:48rem;margin-inline:auto;text-align:center;">
     {{ with $title }}
-    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">
+    <h2 class="w-full text-center text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white tracking-tight mb-4"
+        style="display:block;width:100%;max-width:none;margin-inline:0;text-align:center;">
       {{ . }}
     </h2>
     {{ end }}
-    
+
     {{ with $subtitle }}
-    <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+    <p class="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3"
+       style="width:100%;max-width:none;margin-inline:0;text-align:center;">
       {{ . }}
     </p>
     {{ end }}
-  </div>
+
+    {{ with $text }}
+    <div class="prose dark:prose-invert mx-auto text-center" style="margin-inline:auto;text-align:center;">
+      {{ . }}
+    </div>
+    {{ end }}
+  </header>
+  {{ end }}
 
   {{/* Contact Cards Grid */}}
   <div class="grid {{ $grid_class }} gap-8 lg:gap-12">

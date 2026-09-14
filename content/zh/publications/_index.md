@@ -1,7 +1,7 @@
 
 
 ---
-title: 出版物
+title: 论文成果
 type: landing
 cms_exclude: true
 # view: citation
@@ -10,7 +10,7 @@ sections:
   - block: publication-search
     id: publications
     content:
-      title: 出版物
+      title: 论文成果
       subtitle: 汇集前沿研究成果，分享最新学术进展
       # text: Our diverse team brings together expertise from multiple disciplines.
       # 对应 content/publications/ 目录

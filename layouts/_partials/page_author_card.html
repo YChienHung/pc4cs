@@ -5,7 +5,8 @@
 
 {{ if $profile }}
   {{/* If it's a personal site and the profile is owner, link home */}}
-  {{ $profile_url := printf "/authors/%s/" $profile.slug }}
+  {{- $termPage := site.GetPage (printf "/authors/%s/" $profile.slug) -}}
+  {{ $profile_url := $termPage.RelPermalink }}
   {{ if and (eq $site_type "Person") ($profile.is_owner) }}
     {{ $profile_url = site.BaseURL }}
   {{ end }}
